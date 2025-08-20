@@ -221,14 +221,45 @@
         
         /* Theming - Dynamic CSS Variable Updates */
         body[data-theme="dawn"] { 
-            --color-bg-1: #F4E9E2; --color-bg-2: #E9D8D0; --color-shape-1: #D6C2B9; --color-shape-2: #E1A691; --color-text-primary: #5C4B44; --color-text-secondary: #8E7C74; --color-shadow: rgba(92, 75, 68, 0.1); --color-bloom: #E1A691; 
+            --color-bg-1: #F4E9E2; --color-bg-2: #E9D8D0; --color-shape-1: #D6C2B9; --color-shape-2: #E1A691; --color-text-primary: #5C4B44; --color-text-secondary: #8E7C74; --color-shadow: rgba(92, 75, 68, 0.1); --color-bloom: #E1A691; --color-light-ray: rgba(255, 220, 180, 0.25);
         }
         body[data-theme="dusk"] { 
-            --color-bg-1: #3E415C; --color-bg-2: #2B2D42; --color-shape-1: #5C6081; --color-shape-2: #8D99AE; --color-text-primary: #EDF2F4; --color-text-secondary: #D9D9D9; --color-shadow: rgba(0, 0, 0, 0.2); --color-bloom: #8D99AE; 
+            --color-bg-1: #3E415C; --color-bg-2: #2B2D42; --color-shape-1: #5C6081; --color-shape-2: #8D99AE; --color-text-primary: #EDF2F4; --color-text-secondary: #D9D9D9; --color-shadow: rgba(0, 0, 0, 0.2); --color-bloom: #8D99AE; --color-light-ray: rgba(173, 216, 230, 0.15);
         }
         body[data-theme="meadow"] { 
-            --color-bg-1: #E0F2E9; --color-bg-2: #C8E6C9; --color-shape-1: #A5D6A7; --color-shape-2: #81C784; --color-text-primary: #2E7D32; --color-text-secondary: #66BB6A; --color-shadow: rgba(76, 175, 80, 0.15); --color-bloom: #81C784; 
+            --color-bg-1: #E0F2E9; --color-bg-2: #C8E6C9; --color-shape-1: #A5D6A7; --color-shape-2: #81C784; --color-text-primary: #2E7D32; --color-text-secondary: #66BB6A; --color-shadow: rgba(76, 175, 80, 0.15); --color-bloom: #81C784; --color-light-ray: rgba(220, 255, 220, 0.2);
         }
+
+        /* --- LIGHT RAYS --- */
+        #light-rays {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0;
+            --ray-color: var(--color-light-ray, rgba(255, 220, 180, 0.25)); /* Default to dawn color */
+            background:
+                radial-gradient(ellipse at var(--mouse-x, 50%) -40%, var(--ray-color) 0%, transparent 40%),
+                radial-gradient(ellipse at calc(var(--mouse-x, 50%) - 20%) -30%, var(--ray-color) 0%, transparent 35%),
+                radial-gradient(ellipse at calc(var(--mouse-x, 50%) + 25%) -35%, var(--ray-color) 0%, transparent 35%);
+            filter: blur(15px);
+            mix-blend-mode: screen;
+            transition: opacity var(--timing-slow) var(--easing-standard);
+            animation: sway 30s ease-in-out infinite alternate;
+        }
+
+        body.light-rays-active #light-rays {
+            opacity: 1;
+        }
+
+        @keyframes sway {
+            from { transform: translateX(-10%) scale(1.2); }
+            to { transform: translateX(10%) scale(1.4); }
+        }
+        /* --- END LIGHT RAYS --- */
 
         /* --- BREATHING FOCUS MODE STYLES --- */
         @keyframes pulse {
@@ -275,6 +306,9 @@
     <!-- Parallax Layer: Dust Motes Container -->
     <div id="dust-motes"></div>
     
+    <!-- Light Rays Layer -->
+    <div id="light-rays"></div>
+
     <!-- Geometric Pattern Layer (initially hidden) -->
     <div id="geometric-pattern">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -313,6 +347,11 @@
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         </div>
         
+        <!-- Toggle Light Rays Button -->
+        <div class="control-leaf" id="toggle-rays" title="Toggle Light Rays" aria-label="Toggle Light Rays">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </div>
+
         <!-- Toggle Focus Mode Button -->
         <div class="control-leaf" id="toggle-focus" title="Toggle Focus Mode" aria-label="Toggle Focus Mode">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle></svg>
@@ -328,9 +367,11 @@
         const body = document.body;
         const themeBloom = document.getElementById('theme-bloom');
         const parallaxLayers = document.querySelectorAll('.parallax-layer');
+        const lightRays = document.getElementById('light-rays');
         const motesContainer = document.getElementById('dust-motes');
         const themeButtons = document.querySelectorAll('.controls .control-leaf[id^="theme-"]');
         const togglePatternButton = document.getElementById('toggle-pattern');
+        const toggleRaysButton = document.getElementById('toggle-rays');
         const focusToggleButton = document.getElementById('toggle-focus');
         const focusPromptEl = document.getElementById('focus-prompt');
 
@@ -364,6 +405,13 @@
                 togglePatternButton.classList.remove('active');
             }
 
+            // Update active state of light rays toggle button
+            if (body.classList.contains('light-rays-active')) {
+                toggleRaysButton.classList.add('active');
+            } else {
+                toggleRaysButton.classList.remove('active');
+            }
+
             // Update focus toggle button state (handled by toggleFocusMode itself)
         }
 
@@ -384,6 +432,10 @@
                 // Calculate normalized coordinates (-0.5 to 0.5) relative to viewport center
                 const x = (clientX / window.innerWidth) - 0.5;
                 const y = (clientY / window.innerHeight) - 0.5;
+
+                // Move light rays with mouse
+                const mouseXPercent = (clientX / window.innerWidth) * 100;
+                lightRays.style.setProperty('--mouse-x', `${mouseXPercent}%`);
 
                 // Multipliers for different layers to create depth
                 const multipliers = { 
@@ -476,6 +528,18 @@
 
         // Event listener for pattern toggle button
         togglePatternButton.addEventListener('click', toggleGeometricPattern);
+
+        // --- LIGHT RAYS TOGGLE ---
+        /**
+         * Toggles the light rays visibility.
+         */
+        function toggleLightRays() {
+            body.classList.toggle('light-rays-active');
+            updateControlActiveStates();
+        }
+
+        // Event listener for light rays toggle button
+        toggleRaysButton.addEventListener('click', toggleLightRays);
 
         // --- DUST MOTES GENERATION ---
         const numMotes = 30; // Number of dust motes to generate
