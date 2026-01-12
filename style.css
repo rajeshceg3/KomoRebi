@@ -1,0 +1,419 @@
+/* CSS Variables for Theming and Animation */
+:root {
+    /* Default Dawn Theme Palette */
+    --color-bg-1: #F4E9E2; /* Light background */
+    --color-bg-2: #E9D8D0; /* Slightly darker background */
+    --color-shape-1: #D6C2B9; /* Neutral shape color */
+    --color-shape-2: #E1A691; /* Accent/control color */
+    --color-text-primary: #5C4B44; /* Dark primary text */
+    --color-text-secondary: #8E7C74; /* Muted secondary text */
+    --color-shadow: rgba(92, 75, 68, 0.1); /* Soft shadow */
+    --color-glass: rgba(255, 255, 255, 0.25); /* Glass effect background */
+    --color-glass-border: rgba(255, 255, 255, 0.4); /* Glass border */
+    --color-bloom: #E1A691; /* Color for theme transition bloom */
+    --color-light-ray: rgba(255, 220, 180, 0.25);
+
+    /* Animation Timings */
+    --timing-fast: 300ms;
+    --timing-med: 600ms;
+    --timing-slow: 1200ms;
+
+    /* Animation Easing Functions */
+    --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-bloom: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-bg-1);
+}
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color var(--timing-slow) var(--easing-standard);
+}
+
+/* Noise Overlay */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 90;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Parallax Layers */
+.parallax-layer {
+    position: fixed;
+    will-change: transform;
+    /* Slightly smoother transition for desktop feel */
+    transition: transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Background Canvas Layer */
+#background-canvas {
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 70% 30%, var(--color-bg-2), transparent 40%),
+        radial-gradient(circle at 30% 70%, var(--color-shape-1), transparent 40%),
+        radial-gradient(circle at 50% 50%, var(--color-bg-1), transparent 30%);
+    background-size: 100% 100%;
+    animation: slowDrift 45s linear infinite alternate;
+}
+@keyframes slowDrift {
+    from { transform: translate(0, 0); }
+    to { transform: translate(2%, 1%); }
+}
+
+/* Dust Motes Layer */
+#dust-motes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+.mote {
+    position: absolute;
+    background-color: var(--color-shape-1);
+    border-radius: 50%;
+    opacity: 0.5;
+    filter: blur(1.5px);
+    animation: float 25s infinite linear;
+    will-change: transform, opacity;
+    transition: background-color var(--timing-slow) var(--easing-standard);
+}
+@keyframes float {
+    0% { transform: translateX(0) translateY(0); opacity: 0.5; }
+    50% { transform: translateX(calc(var(--x-end) * 1px)) translateY(calc(var(--y-end) * 1px)); opacity: 0.8; }
+    100% { transform: translateX(0) translateY(0); opacity: 0.5; }
+}
+
+/* Geometric Pattern Layer */
+#geometric-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity var(--timing-slow) var(--easing-standard);
+    pointer-events: none;
+}
+body.pattern-active #geometric-pattern {
+    opacity: 0.15;
+}
+#geometric-pattern svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--color-text-secondary);
+}
+
+/* Main Content Area */
+main {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    color: var(--color-text-primary);
+    animation: fadeIn 2s var(--easing-standard) forwards;
+    opacity: 0;
+    transition: color var(--timing-slow) var(--easing-standard), transform 100ms linear;
+    width: 100%;
+}
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+h1 {
+    /* Using clamp for fluid typography: min, preferred, max */
+    font-size: clamp(3rem, 8vw, 8rem);
+    font-family: 'Playfair Display', serif; /* New serif font */
+    font-weight: 500;
+    letter-spacing: 0.5vw;
+    text-transform: uppercase;
+    transition: transform var(--timing-slow) var(--easing-standard);
+}
+p {
+    /* Fluid typography for paragraph */
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    font-weight: 300;
+    letter-spacing: 0.2vw;
+    margin-top: 2vh;
+    color: var(--color-text-secondary);
+    transition: color var(--timing-slow) var(--easing-standard);
+}
+#focus-prompt {
+    display: inline-block;
+    transition: opacity var(--timing-med) var(--easing-standard);
+}
+
+/* Control Buttons */
+.controls {
+    position: fixed;
+    bottom: 5vh;
+    left: 50%;
+    z-index: 20;
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--color-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 24px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 2px 4px -1px rgba(0, 0, 0, 0.03),
+        0 12px 24px -4px var(--color-shadow);
+    animation: fadeIn 2s 0.5s var(--easing-standard) forwards;
+    opacity: 0;
+    transform: translateX(-50%);
+    transition: transform 100ms linear, background-color var(--timing-slow) var(--easing-standard);
+}
+
+.control-leaf {
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    border-radius: 12px; /* Soft square/squircle */
+    background: transparent;
+    color: var(--color-text-primary);
+    transition: all 0.2s var(--easing-standard);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.control-leaf:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.control-leaf.active {
+    background: var(--color-shape-2);
+    color: var(--color-bg-1);
+    box-shadow: 0 4px 12px -2px var(--color-shadow);
+}
+
+.control-leaf:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.control-leaf svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke var(--timing-slow) var(--easing-standard);
+}
+
+/* Tooltip on hover */
+.control-leaf::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.control-leaf:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Theme Bloom Effect */
+#theme-bloom {
+    position: fixed;
+    z-index: 99;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+    background: var(--color-bloom);
+    border-radius: 50%;
+    transform: scale(0);
+    pointer-events: none;
+}
+#theme-bloom.is-blooming {
+    transition: transform 1s var(--easing-bloom), background-color var(--timing-med) var(--easing-standard);
+    transform: scale(3000);
+}
+
+/* Theming */
+body[data-theme="dawn"] {
+    --color-bg-1: #F4E9E2; --color-bg-2: #E9D8D0; --color-shape-1: #D6C2B9; --color-shape-2: #E1A691; --color-text-primary: #5C4B44; --color-text-secondary: #8E7C74; --color-shadow: rgba(92, 75, 68, 0.15); --color-bloom: #E1A691; --color-light-ray: rgba(255, 220, 180, 0.25);
+    --color-glass: rgba(255, 255, 255, 0.35);
+    --color-glass-border: rgba(255, 255, 255, 0.5);
+}
+body[data-theme="dusk"] {
+    --color-bg-1: #3E415C; --color-bg-2: #2B2D42; --color-shape-1: #5C6081; --color-shape-2: #8D99AE; --color-text-primary: #EDF2F4; --color-text-secondary: #B0B5C1; --color-shadow: rgba(0, 0, 0, 0.3); --color-bloom: #8D99AE; --color-light-ray: rgba(173, 216, 230, 0.15);
+    --color-glass: rgba(43, 45, 66, 0.4);
+    --color-glass-border: rgba(255, 255, 255, 0.1);
+}
+body[data-theme="meadow"] {
+    --color-bg-1: #E0F2E9; --color-bg-2: #C8E6C9; --color-shape-1: #A5D6A7; --color-shape-2: #66BB6A; --color-text-primary: #1B5E20; --color-text-secondary: #4CAF50; --color-shadow: rgba(27, 94, 32, 0.15); --color-bloom: #81C784; --color-light-ray: rgba(220, 255, 220, 0.2);
+    --color-glass: rgba(255, 255, 255, 0.35);
+    --color-glass-border: rgba(255, 255, 255, 0.5);
+}
+
+/* --- LIGHT RAYS --- */
+#light-rays {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    --ray-color: var(--color-light-ray, rgba(255, 220, 180, 0.25));
+    background:
+        radial-gradient(ellipse at var(--mouse-x, 50%) -40%, var(--ray-color) 0%, transparent 40%),
+        radial-gradient(ellipse at calc(var(--mouse-x, 50%) - 20%) -30%, var(--ray-color) 0%, transparent 35%),
+        radial-gradient(ellipse at calc(var(--mouse-x, 50%) + 25%) -35%, var(--ray-color) 0%, transparent 35%);
+    filter: blur(15px);
+    mix-blend-mode: screen;
+    transition: opacity var(--timing-slow) var(--easing-standard);
+    animation: sway 30s ease-in-out infinite alternate;
+}
+
+body.light-rays-active #light-rays {
+    opacity: 1;
+}
+
+@keyframes sway {
+    from { transform: translateX(-10%) scale(1.2); }
+    to { transform: translateX(10%) scale(1.4); }
+}
+
+/* --- BREATHING FOCUS MODE STYLES --- */
+#breathing-guide {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 1px solid var(--color-bloom);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+    box-shadow: 0 0 40px rgba(0,0,0,0.05);
+}
+
+body.focus-mode-active #breathing-guide {
+    opacity: 0.4;
+    animation: breathe-guide 4s infinite ease-in-out; /* Matches the 4s cycle (4s for cycle is too fast for 4-4-4-4, let's check JS) */
+    /* JS uses 4000ms interval for each STEP. So total cycle is 16s? */
+    /* Wait, the JS updates prompt every 4000ms. So Inhale(4s) -> Hold(4s) -> Exhale(4s) -> Hold(4s). Total 16s. */
+    animation: breathe-guide 16s infinite linear;
+}
+
+@keyframes breathe-guide {
+    0% { transform: translate(-50%, -50%) scale(0.8); border-width: 1px; } /* Start Inhale */
+    25% { transform: translate(-50%, -50%) scale(1.3); border-width: 4px; } /* End Inhale, Start Hold */
+    50% { transform: translate(-50%, -50%) scale(1.3); border-width: 4px; } /* End Hold, Start Exhale */
+    75% { transform: translate(-50%, -50%) scale(0.8); border-width: 1px; } /* End Exhale, Start Hold */
+    100% { transform: translate(-50%, -50%) scale(0.8); border-width: 1px; } /* End Hold */
+}
+
+/* Dim everything else more aggressively */
+body.focus-mode-active h1 {
+    opacity: 0.2;
+    transition: opacity 1s ease;
+}
+
+body.focus-mode-active .controls {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+body.focus-mode-active .controls .control-leaf {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+body.focus-mode-active .controls #toggle-focus.active {
+    opacity: 0.8;
+    pointer-events: auto;
+    transform: translateY(0);
+    background: var(--color-glass);
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#dust-motes.is-holding .mote {
+    animation-play-state: paused;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    /* Fluid typography handles most font sizing, but specific tweaks might be needed */
+    .controls {
+        bottom: 4vh;
+        gap: 16px; /* Increased gap for touch targets */
+        padding: 16px; /* Larger padding */
+        width: 90%; /* Wider dock on mobile */
+        justify-content: space-around; /* Distribute buttons */
+        backdrop-filter: blur(16px); /* Stronger blur for mobile legibility */
+        -webkit-backdrop-filter: blur(16px);
+    }
+    .control-leaf {
+        width: 56px; /* Larger touch target (min 44px is standard, went bigger) */
+        height: 56px;
+    }
+    .control-leaf svg { width: 28px; height: 28px; }
+
+    /* Disable tooltip on touch devices as it can get stuck */
+    .control-leaf::after {
+        display: none;
+    }
+
+    /* Reduce parallax movement on mobile to prevent nausea/jitter */
+    .parallax-layer {
+        transition: transform 50ms linear; /* Faster response for touch dragging if implemented, or just less lag */
+    }
+}
