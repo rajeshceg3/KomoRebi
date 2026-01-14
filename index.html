@@ -13,50 +13,75 @@
     <style>
         /* CSS Variables for Theming and Animation */
         :root {
-            /* Default Dawn Theme Palette */
-            --color-bg-1: #F4E9E2; /* Light background */
-            --color-bg-2: #E9D8D0; /* Slightly darker background */
-            --color-shape-1: #D6C2B9; /* Neutral shape color */
-            --color-shape-2: #E1A691; /* Accent/control color */
-            --color-text-primary: #5C4B44; /* Dark primary text */
-            --color-text-secondary: #8E7C74; /* Muted secondary text */
-            --color-shadow: rgba(92, 75, 68, 0.1); /* Soft shadow */
-            --color-bloom: #E1A691; /* Color for theme transition bloom */
+            /* Typography Scale */
+            --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-size-h1: clamp(3rem, 8vw, 6rem);
+            --font-size-p: clamp(1rem, 1.5vw, 1.25rem);
+
+            /* Default Dawn Theme Palette - Refined for Warmth */
+            --color-bg-1: #FDF6F3;
+            --color-bg-2: #F4E4DC;
+            --color-shape-1: #E8D3C8;
+            --color-shape-2: #DCA995;
+            --color-text-primary: #4A3B32;
+            --color-text-secondary: #8D7B72;
+            --color-shadow: rgba(74, 59, 50, 0.08);
+            --color-bloom: #DCA995;
+            --color-dock-bg: rgba(253, 246, 243, 0.65);
+            --color-dock-border: rgba(255, 255, 255, 0.4);
 
             /* Animation Timings */
-            --timing-fast: 300ms;
-            --timing-med: 600ms;
-            --timing-slow: 1200ms;
+            --timing-fast: 250ms;
+            --timing-med: 500ms;
+            --timing-slow: 1000ms;
 
-            /* Animation Easing Functions */
-            --easing-standard: cubic-bezier(0.4, 0, 0.2, 1); /* Standard material design easing */
-            --easing-bloom: cubic-bezier(0.22, 1, 0.36, 1); /* More bouncy/expressive easing for bloom */
+            /* Animation Easing Functions - "Ultrathink" Smoothness */
+            --easing-standard: cubic-bezier(0.2, 0.0, 0.2, 1.0); /* High-quality standard easing */
+            --easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy spring */
+            --easing-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
         }
 
         /* Base Styles */
         * { 
-            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            box-sizing: border-box;
             margin: 0; 
             padding: 0; 
+            -webkit-font-smoothing: antialiased; /* Crisp text on Mac */
+            -moz-osx-font-smoothing: grayscale;
         }
         html, body { 
-            height: 100%; /* Full viewport height */
-            overflow: hidden; /* Prevent scrolling */
-            font-family: 'Inter', sans-serif; /* Apply Inter font */
-            background-color: var(--color-bg-1); /* Apply base background color */
+            height: 100%;
+            height: 100dvh; /* Dynamic Viewport Height for mobile */
+            overflow: hidden;
+            font-family: var(--font-display);
+            background-color: var(--color-bg-1);
         }
         body { 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            transition: background-color var(--timing-slow) var(--easing-standard); /* Smooth background color transition on theme change */
+            transition: background-color var(--timing-slow) var(--easing-standard);
+        }
+
+        /* Noise Overlay for Texture */
+        #noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 90;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
         }
 
         /* Parallax Layers */
         .parallax-layer { 
-            position: fixed; /* Fixed position relative to viewport */
-            will-change: transform; /* Hint to browser for performance optimization */
-            transition: transform 100ms linear; /* Smooth parallax movement */
+            position: fixed;
+            will-change: transform;
+            /* Removed linear transition for direct JS control (smoother) */
+            /* transform-style: preserve-3d; */
         }
 
         /* Background Canvas Layer (for subtle gradients and drift) */
@@ -86,17 +111,18 @@
             width: 100%; 
             height: 100%; 
             z-index: 2; 
-            pointer-events: none; /* Allow clicks to pass through */
+            pointer-events: none;
         }
         .mote { 
             position: absolute; 
             background-color: var(--color-shape-1); 
             border-radius: 50%; 
-            opacity: 0.5; 
-            filter: blur(1.5px); /* Soft blur for a dreamy effect */
-            animation: float 25s infinite linear; /* Floating animation */
+            opacity: 0.6;
+            filter: blur(1px);
+            animation: float 25s infinite linear;
             will-change: transform, opacity; 
-            transition: background-color var(--timing-slow) var(--easing-standard); /* Smooth color transition */
+            transition: background-color var(--timing-slow) var(--easing-standard);
+            box-shadow: 0 0 4px var(--color-shape-1); /* Glow effect */
         }
         @keyframes float { 
             0% { transform: translateX(0) translateY(0); opacity: 0.5; } 
@@ -139,17 +165,18 @@
             to { opacity: 1; } 
         }
         h1 { 
-            font-size: 8vw; /* Responsive font size */
+            font-size: var(--font-size-h1);
             font-weight: 500; 
-            letter-spacing: 0.5vw; 
-            text-transform: uppercase; 
-            transition: transform var(--timing-slow) var(--easing-standard); /* Smooth transform transition */
+            letter-spacing: -0.02em; /* Tighter tracking for modern look */
+            line-height: 1.1;
+            text-transform: none; /* Removed uppercase for a more relaxed feel */
+            transition: transform var(--timing-slow) var(--easing-standard);
         }
         p { 
-            font-size: 1.5vw; 
-            font-weight: 300; 
-            letter-spacing: 0.2vw; 
-            margin-top: 1vh; 
+            font-size: var(--font-size-p);
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            margin-top: 1.5vh;
             color: var(--color-text-secondary); 
             transition: color var(--timing-slow) var(--easing-standard); 
         }
@@ -158,47 +185,110 @@
             transition: opacity var(--timing-med) var(--easing-standard); /* Smooth fade for focus prompt text */
         }
 
-        /* Control Buttons */
+        /* Control Dock */
         .controls { 
             position: fixed; 
-            bottom: 5vh; 
+            bottom: 3rem;
             left: 50%; 
             z-index: 20; 
             display: flex; 
-            gap: 20px; 
-            animation: fadeIn 2s 0.5s var(--easing-standard) forwards; /* Fade in after main content */
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 24px;
+            background: var(--color-dock-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--color-dock-border);
+            box-shadow:
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 10px 15px -3px rgba(0, 0, 0, 0.05),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             opacity: 0; 
-            transform: translateX(-50%); /* Center horizontally */
-            transition: transform 100ms linear; 
+            transform: translateX(-50%) translateY(20px);
+            transition: transform 100ms linear, opacity 0.5s ease;
         }
-        .control-leaf { 
-            width: 60px; 
-            height: 60px; 
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .control-group {
+            display: flex;
+            gap: 4px;
+            padding: 0 4px;
+            border-right: 1px solid var(--color-dock-border);
+        }
+        .control-group:last-child {
+            border-right: none;
+        }
+
+        .control-btn {
+            position: relative;
+            width: 44px;
+            height: 44px;
             cursor: pointer; 
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; /* Leaf-like shape */
-            background: var(--color-shape-2); 
-            box-shadow: 0 10px 20px -5px var(--color-shadow); 
-            transition: all var(--timing-fast) var(--easing-standard); 
+            border-radius: 12px;
+            background: transparent;
             display: flex; 
             justify-content: center; 
             align-items: center; 
+            color: var(--color-text-secondary);
+            transition: all var(--timing-fast) var(--easing-standard);
         }
-        .control-leaf:hover, .control-leaf.active { 
-            transform: translateY(-8px) scale(1.05); /* Lift and slightly enlarge on hover/active */
-            box-shadow: 0 18px 35px -8px var(--color-shadow); 
+
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--color-text-primary);
+            transform: translateY(-2px);
         }
-        .control-leaf:active { 
-            transform: translateY(-2px) scale(0.98); /* Press effect */
+
+        .control-btn.active {
+            background-color: var(--color-shape-2);
+            color: var(--color-bg-1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .control-leaf svg { 
-            width: 28px; 
-            height: 28px; 
-            stroke: var(--color-bg-1); /* Icon color */
-            stroke-width: 1.5; 
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
             fill: none; 
             stroke-linecap: round; 
             stroke-linejoin: round; 
-            transition: stroke var(--timing-slow) var(--easing-standard); 
+            transition: all 0.2s ease;
+        }
+
+        /* Tooltips */
+        .control-btn::after {
+            content: attr(aria-label);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px) scale(0.95);
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 100;
+            margin-bottom: 8px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .control-btn:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
         }
 
         /* Theme Bloom Effect */
@@ -221,13 +311,13 @@
         
         /* Theming - Dynamic CSS Variable Updates */
         body[data-theme="dawn"] { 
-            --color-bg-1: #F4E9E2; --color-bg-2: #E9D8D0; --color-shape-1: #D6C2B9; --color-shape-2: #E1A691; --color-text-primary: #5C4B44; --color-text-secondary: #8E7C74; --color-shadow: rgba(92, 75, 68, 0.1); --color-bloom: #E1A691; --color-light-ray: rgba(255, 220, 180, 0.25);
+            --color-bg-1: #FDF6F3; --color-bg-2: #F4E4DC; --color-shape-1: #E8D3C8; --color-shape-2: #DCA995; --color-text-primary: #4A3B32; --color-text-secondary: #8D7B72; --color-shadow: rgba(74, 59, 50, 0.08); --color-bloom: #DCA995; --color-light-ray: rgba(255, 220, 180, 0.3); --color-dock-bg: rgba(253, 246, 243, 0.65); --color-dock-border: rgba(255, 255, 255, 0.5);
         }
         body[data-theme="dusk"] { 
-            --color-bg-1: #3E415C; --color-bg-2: #2B2D42; --color-shape-1: #5C6081; --color-shape-2: #8D99AE; --color-text-primary: #EDF2F4; --color-text-secondary: #D9D9D9; --color-shadow: rgba(0, 0, 0, 0.2); --color-bloom: #8D99AE; --color-light-ray: rgba(173, 216, 230, 0.15);
+            --color-bg-1: #1E202C; --color-bg-2: #15161E; --color-shape-1: #383B53; --color-shape-2: #7A81A8; --color-text-primary: #F0F2F5; --color-text-secondary: #A0A4B8; --color-shadow: rgba(0, 0, 0, 0.3); --color-bloom: #7A81A8; --color-light-ray: rgba(173, 216, 250, 0.12); --color-dock-bg: rgba(30, 32, 44, 0.6); --color-dock-border: rgba(255, 255, 255, 0.1);
         }
         body[data-theme="meadow"] { 
-            --color-bg-1: #E0F2E9; --color-bg-2: #C8E6C9; --color-shape-1: #A5D6A7; --color-shape-2: #81C784; --color-text-primary: #2E7D32; --color-text-secondary: #66BB6A; --color-shadow: rgba(76, 175, 80, 0.15); --color-bloom: #81C784; --color-light-ray: rgba(220, 255, 220, 0.2);
+            --color-bg-1: #F1F8F4; --color-bg-2: #E1EFE6; --color-shape-1: #C5E1D0; --color-shape-2: #88BBA0; --color-text-primary: #2C4A34; --color-text-secondary: #6B8E76; --color-shadow: rgba(44, 74, 52, 0.08); --color-bloom: #88BBA0; --color-light-ray: rgba(220, 255, 220, 0.25); --color-dock-bg: rgba(241, 248, 244, 0.65); --color-dock-border: rgba(255, 255, 255, 0.4);
         }
 
         /* --- LIGHT RAYS --- */
@@ -240,24 +330,26 @@
             z-index: 4;
             pointer-events: none;
             opacity: 0;
-            --ray-color: var(--color-light-ray, rgba(255, 220, 180, 0.25)); /* Default to dawn color */
+            --ray-color: var(--color-light-ray, rgba(255, 220, 180, 0.25));
+            /* Enhanced gradient structure for more realistic "God Rays" */
             background:
-                radial-gradient(ellipse at var(--mouse-x, 50%) -40%, var(--ray-color) 0%, transparent 40%),
-                radial-gradient(ellipse at calc(var(--mouse-x, 50%) - 20%) -30%, var(--ray-color) 0%, transparent 35%),
-                radial-gradient(ellipse at calc(var(--mouse-x, 50%) + 25%) -35%, var(--ray-color) 0%, transparent 35%);
-            filter: blur(15px);
-            mix-blend-mode: screen;
+                conic-gradient(from 180deg at 50% -10%, transparent 40%, var(--ray-color) 50%, transparent 60%),
+                radial-gradient(circle at 50% 0%, var(--ray-color) 0%, transparent 60%);
+            background-size: 200% 200%;
+            filter: blur(40px); /* Increased blur for softness */
+            mix-blend-mode: screen; /* Or overlay/soft-light depending on bg */
             transition: opacity var(--timing-slow) var(--easing-standard);
-            animation: sway 30s ease-in-out infinite alternate;
+            animation: rayShimmer 20s ease-in-out infinite alternate;
         }
 
         body.light-rays-active #light-rays {
             opacity: 1;
         }
 
-        @keyframes sway {
-            from { transform: translateX(-10%) scale(1.2); }
-            to { transform: translateX(10%) scale(1.4); }
+        @keyframes rayShimmer {
+            0% { transform: translateX(-5%) scale(1.1); opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { transform: translateX(5%) scale(1.2); opacity: 0.8; }
         }
         /* --- END LIGHT RAYS --- */
 
@@ -271,21 +363,74 @@
         }
 
         body.focus-mode-active h1 {
-            animation: pulse 16s infinite ease-in-out; /* Apply pulse animation to H1 */
+            opacity: 0.5;
+            transform: scale(0.95);
         }
 
-        body.focus-mode-active .controls .control-leaf {
-            opacity: 0.3; /* Dim other control buttons */
-            pointer-events: none; /* Disable other buttons */
+        /* Breathing Ring Visualization */
+        #breathing-ring {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 2px solid var(--color-shape-2);
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.5s ease;
+        }
+
+        #breathing-ring::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            background: var(--color-shape-2);
+            opacity: 0.1;
+        }
+
+        body.focus-mode-active #breathing-ring {
+            opacity: 1;
+            animation: breatheAnimation 16s infinite ease-in-out;
+        }
+
+        @keyframes breatheAnimation {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } /* Start Inhale */
+            25% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } /* Inhale Complete */
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } /* Hold */
+            75% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } /* Exhale Complete */
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } /* Hold */
+        }
+
+        body.focus-mode-active .controls {
+            border-color: transparent;
+            background: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+        }
+
+        body.focus-mode-active .controls .control-group {
+            border-right: none;
+        }
+
+        body.focus-mode-active .controls .control-btn {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
         }
 
         body.focus-mode-active .controls #toggle-focus.active {
-            opacity: 1; /* Keep focus toggle button visible */
-            pointer-events: auto; /* Re-enable focus toggle button */
+            opacity: 0.8;
+            pointer-events: auto;
+            transform: translateY(0);
         }
         
         #dust-motes.is-holding .mote {
-            animation-play-state: paused; /* Pause mote animation during "Hold" phase */
+            transition: all 1s ease;
+            opacity: 0.2;
         }
         /* --- END FOCUS MODE STYLES --- */
 
@@ -309,6 +454,9 @@
     <!-- Light Rays Layer -->
     <div id="light-rays"></div>
 
+    <!-- Noise Overlay -->
+    <div id="noise-overlay"></div>
+
     <!-- Geometric Pattern Layer (initially hidden) -->
     <div id="geometric-pattern">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -329,32 +477,37 @@
         <p><span id="focus-prompt">A space for quiet thought</span></p>
     </main>
 
+    <!-- Breathing Ring -->
+    <div id="breathing-ring"></div>
+
     <!-- Control Buttons Layer -->
     <div class="controls parallax-layer">
-        <!-- Theme Buttons -->
-        <div class="control-leaf" id="theme-dawn" title="Switch to Dawn Theme" aria-label="Switch to Dawn Theme">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </div>
-        <div class="control-leaf" id="theme-dusk" title="Switch to Dusk Theme" aria-label="Switch to Dusk Theme">
-            <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-        </div>
-        <div class="control-leaf" id="theme-meadow" title="Switch to Meadow Theme" aria-label="Switch to Meadow Theme">
-            <svg viewBox="0 0 24 24"><path d="M20.9 10.1a9.3 9.3 0 0 0-8.8-8.8A9.3 9.3 0 0 0 3.1 10.1c0 5.1 4.2 9.3 9.3 9.3s9.3-4.2 9.3-9.3z"></path><path d="M12 2v20"></path></svg>
-        </div>
-        
-        <!-- Toggle Geometric Pattern Button -->
-        <div class="control-leaf" id="toggle-pattern" title="Toggle Geometric Pattern" aria-label="Toggle Geometric Pattern">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <!-- Theme Buttons Group -->
+        <div class="control-group">
+            <div class="control-btn" id="theme-dawn" aria-label="Dawn">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </div>
+            <div class="control-btn" id="theme-dusk" aria-label="Dusk">
+                <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </div>
+            <div class="control-btn" id="theme-meadow" aria-label="Meadow">
+                <svg viewBox="0 0 24 24"><path d="M20.9 10.1a9.3 9.3 0 0 0-8.8-8.8A9.3 9.3 0 0 0 3.1 10.1c0 5.1 4.2 9.3 9.3 9.3s9.3-4.2 9.3-9.3z"></path><path d="M12 2v20"></path></svg>
+            </div>
         </div>
         
-        <!-- Toggle Light Rays Button -->
-        <div class="control-leaf" id="toggle-rays" title="Toggle Light Rays" aria-label="Toggle Light Rays">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </div>
+        <!-- Features Group -->
+        <div class="control-group">
+            <div class="control-btn" id="toggle-pattern" aria-label="Patterns">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><circle cx="15.5" cy="8.5" r="1.5"></circle><circle cx="15.5" cy="15.5" r="1.5"></circle><circle cx="8.5" cy="15.5" r="1.5"></circle></svg>
+            </div>
 
-        <!-- Toggle Focus Mode Button -->
-        <div class="control-leaf" id="toggle-focus" title="Toggle Focus Mode" aria-label="Toggle Focus Mode">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle></svg>
+            <div class="control-btn" id="toggle-rays" aria-label="Light Rays">
+                <svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.828-6.172l-2.122 2.122m-8.1 8.1l-2.122 2.122m0-12.244l2.122 2.122m8.1 8.1l2.122 2.122M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path></svg>
+            </div>
+
+            <div class="control-btn" id="toggle-focus" aria-label="Focus Mode">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
         </div>
     </div>
     
@@ -369,7 +522,7 @@
         const parallaxLayers = document.querySelectorAll('.parallax-layer');
         const lightRays = document.getElementById('light-rays');
         const motesContainer = document.getElementById('dust-motes');
-        const themeButtons = document.querySelectorAll('.controls .control-leaf[id^="theme-"]');
+        const themeButtons = document.querySelectorAll('.controls .control-btn[id^="theme-"]');
         const togglePatternButton = document.getElementById('toggle-pattern');
         const toggleRaysButton = document.getElementById('toggle-rays');
         const focusToggleButton = document.getElementById('toggle-focus');
@@ -415,45 +568,61 @@
             // Update focus toggle button state (handled by toggleFocusMode itself)
         }
 
-        // --- PARALLAX EFFECT ---
+        /* --- PARALLAX EFFECT --- */
+        let targetX = 0;
+        let targetY = 0;
+        let currentX = 0;
+        let currentY = 0;
+
         /**
-         * Handles mouse and touch movements to create a parallax effect on specified layers.
+         * Handles mouse and touch movements to update target coordinates.
          * @param {Object} coords - Object containing clientX and clientY coordinates.
          */
         function handleParallaxMove(coords) {
-            // Disable parallax if focus mode is active
+            // Disable parallax input if focus mode is active
             if (isFocusModeActive) return; 
 
-            // Cancel any pending animation frame to ensure only one is active
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            const { clientX, clientY } = coords;
+            // Calculate normalized coordinates (-0.5 to 0.5)
+            targetX = (clientX / window.innerWidth) - 0.5;
+            targetY = (clientY / window.innerHeight) - 0.5;
             
-            animationFrameId = requestAnimationFrame(() => {
-                const { clientX, clientY } = coords;
-                // Calculate normalized coordinates (-0.5 to 0.5) relative to viewport center
-                const x = (clientX / window.innerWidth) - 0.5;
-                const y = (clientY / window.innerHeight) - 0.5;
+            // Update CSS var for light rays
+            const mouseXPercent = (clientX / window.innerWidth) * 100;
+            lightRays.style.setProperty('--mouse-x', `${mouseXPercent}%`);
+        }
 
-                // Move light rays with mouse
-                const mouseXPercent = (clientX / window.innerWidth) * 100;
-                lightRays.style.setProperty('--mouse-x', `${mouseXPercent}%`);
+        // Linear interpolation function for smooth movement
+        function lerp(start, end, factor) {
+            return start + (end - start) * factor;
+        }
 
-                // Multipliers for different layers to create depth
+        function animateParallax() {
+            if (!isFocusModeActive) {
+                // Smoothly interpolate current towards target
+                // 0.05 is the "smoothness" factor - lower is smoother/slower
+                currentX = lerp(currentX, targetX, 0.05);
+                currentY = lerp(currentY, targetY, 0.05);
+
                 const multipliers = { 
-                    'background-canvas': 30, // Moves fastest
-                    'main': -10,             // Moves slower, in opposite direction
-                    'controls': -5           // Moves slowest, in opposite direction
+                    'background-canvas': 30,
+                    'main': -12,
+                    'controls': -6
                 };
 
-                // Apply transform to each parallax layer
                 parallaxLayers.forEach(layer => {
-                    // Determine multiplier based on layer ID or first class name
                     const multiplier = multipliers[layer.id] || multipliers[layer.className.split(' ')[0]];
-                    if (layer.style) {
-                        layer.style.transform = `translateX(${x * multiplier}px) translateY(${y * multiplier}px)`;
+                    if (layer && layer.style && multiplier) {
+                        // Use translate3d for hardware acceleration
+                        layer.style.transform = `translate3d(${currentX * multiplier}px, ${currentY * multiplier}px, 0)`;
                     }
                 });
-            });
+            }
+            requestAnimationFrame(animateParallax);
         }
+
+        // Start the animation loop
+        requestAnimationFrame(animateParallax);
 
         // Event listeners for parallax
         window.addEventListener('mousemove', handleParallaxMove);
