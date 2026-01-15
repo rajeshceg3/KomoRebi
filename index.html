@@ -13,32 +13,54 @@
     <style>
         /* CSS Variables for Theming and Animation */
         :root {
-            /* Typography Scale */
-            --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --font-size-h1: clamp(3rem, 8vw, 6rem);
-            --font-size-p: clamp(1rem, 1.5vw, 1.25rem);
+            /* Typography Scale - Fluid & Refined */
+            --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-size-h1: clamp(3.5rem, 9vw, 7.5rem);
+            --font-size-p: clamp(1.125rem, 2vw, 1.5rem);
+            --font-weight-h1: 500;
+            --font-weight-p: 400;
 
-            /* Default Dawn Theme Palette - Refined for Warmth */
-            --color-bg-1: #FDF6F3;
-            --color-bg-2: #F4E4DC;
-            --color-shape-1: #E8D3C8;
-            --color-shape-2: #DCA995;
-            --color-text-primary: #4A3B32;
-            --color-text-secondary: #8D7B72;
-            --color-shadow: rgba(74, 59, 50, 0.08);
-            --color-bloom: #DCA995;
-            --color-dock-bg: rgba(253, 246, 243, 0.65);
-            --color-dock-border: rgba(255, 255, 255, 0.4);
+            /* Elevation & Shadows (Stripe-like multi-layer) */
+            --shadow-low:
+                0px 0.6px 0.7px -0.8px rgba(0, 0, 0, 0.08),
+                0px 1.4px 1.6px -1.7px rgba(0, 0, 0, 0.06),
+                0px 3.3px 3.7px -2.5px rgba(0, 0, 0, 0.04);
+            --shadow-medium:
+                0px 0.8px 0.9px -0.6px rgba(0, 0, 0, 0.08),
+                0px 2px 2.3px -1.1px rgba(0, 0, 0, 0.06),
+                0px 4.6px 5.3px -1.7px rgba(0, 0, 0, 0.05),
+                0px 11px 12.7px -2.2px rgba(0, 0, 0, 0.03);
+            --shadow-high:
+                0px 0.5px 0.6px hsl(var(--shadow-color) / 0.1),
+                0px 1.6px 1.8px -0.4px hsl(var(--shadow-color) / 0.1),
+                0px 3.1px 3.5px -0.7px hsl(var(--shadow-color) / 0.1),
+                0px 5.6px 6.4px -1.1px hsl(var(--shadow-color) / 0.1),
+                0px 10px 11.4px -1.4px hsl(var(--shadow-color) / 0.1),
+                0px 18px 20.5px -1.8px hsl(var(--shadow-color) / 0.1);
+            --shadow-color: 240 4% 10%; /* Base HSL for shadows */
+
+            /* Default Dawn Theme Palette - Warm, airy, premium */
+            --color-bg-1: #FFFBF9;
+            --color-bg-2: #F2EBE8;
+            --color-shape-1: #E6D5CD;
+            --color-shape-2: #D4ABA0;
+            --color-text-primary: #463A34;
+            --color-text-secondary: #8A7A72;
+            --color-accent: #D4ABA0;
+            --color-dock-bg: rgba(255, 251, 249, 0.75);
+            --color-dock-border: rgba(255, 255, 255, 0.6);
+            --color-bloom: #F2DAD5;
 
             /* Animation Timings */
-            --timing-fast: 250ms;
-            --timing-med: 500ms;
-            --timing-slow: 1000ms;
+            --timing-fast: 200ms;
+            --timing-med: 400ms;
+            --timing-slow: 800ms;
 
             /* Animation Easing Functions - "Ultrathink" Smoothness */
-            --easing-standard: cubic-bezier(0.2, 0.0, 0.2, 1.0); /* High-quality standard easing */
-            --easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy spring */
-            --easing-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --easing-standard: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+            --easing-out: cubic-bezier(0.16, 1, 0.3, 1); /* Apple-like ease-out */
+            --easing-in: cubic-bezier(0.7, 0, 0.84, 0);
+            --easing-elastic: cubic-bezier(0.5, 1.25, 0.25, 1.15); /* Subtle bounce */
         }
 
         /* Base Styles */
@@ -46,8 +68,9 @@
             box-sizing: border-box;
             margin: 0; 
             padding: 0; 
-            -webkit-font-smoothing: antialiased; /* Crisp text on Mac */
+            -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
         }
         html, body { 
             height: 100%;
@@ -63,7 +86,7 @@
             transition: background-color var(--timing-slow) var(--easing-standard);
         }
 
-        /* Noise Overlay for Texture */
+        /* Noise Overlay for Texture (Ultra-fine grain) */
         #noise-overlay {
             position: fixed;
             top: 0;
@@ -72,8 +95,10 @@
             height: 100%;
             z-index: 90;
             pointer-events: none;
-            opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.03; /* Subtler */
+            /* Higher frequency noise for premium feel */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
         }
 
         /* Parallax Layers */
@@ -84,23 +109,27 @@
             /* transform-style: preserve-3d; */
         }
 
-        /* Background Canvas Layer (for subtle gradients and drift) */
+        /* Background Canvas Layer (Mesh Gradient) */
         #background-canvas { 
             top: -50%; 
             left: -50%; 
             width: 200%; 
-            height: 200%; /* Larger than viewport to allow for drift and parallax */
+            height: 200%;
             z-index: 1; 
-            background: 
-                radial-gradient(circle at 70% 30%, var(--color-bg-2), transparent 40%), 
-                radial-gradient(circle at 30% 70%, var(--color-shape-1), transparent 40%), 
-                radial-gradient(circle at 50% 50%, var(--color-bg-1), transparent 30%); /* Multiple radial gradients for depth */
-            background-size: 100% 100%; 
-            animation: slowDrift 45s linear infinite alternate; /* Continuous slow movement */
+            background-color: var(--color-bg-1);
+            background-image:
+                radial-gradient(at 0% 0%, var(--color-bg-2) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, var(--color-shape-1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, var(--color-shape-2) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, var(--color-bg-2) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, var(--color-bg-1) 0px, transparent 50%);
+            background-size: 120% 120%;
+            animation: meshFlow 60s ease-in-out infinite alternate;
+            opacity: 0.8;
         }
-        @keyframes slowDrift { 
-            from { transform: translate(0, 0); } 
-            to { transform: translate(2%, 1%); } /* Subtle drift effect */
+        @keyframes meshFlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(2%, 1%) scale(1.05); }
         }
         
         /* Dust Motes Layer */
@@ -117,17 +146,15 @@
             position: absolute; 
             background-color: var(--color-shape-1); 
             border-radius: 50%; 
-            opacity: 0.6;
-            filter: blur(1px);
-            animation: float 25s infinite linear;
+            opacity: 0.4;
+            filter: blur(1.5px); /* Softer blur */
+            animation: float 25s infinite ease-in-out alternate; /* smoother motion */
             will-change: transform, opacity; 
             transition: background-color var(--timing-slow) var(--easing-standard);
-            box-shadow: 0 0 4px var(--color-shape-1); /* Glow effect */
         }
         @keyframes float { 
-            0% { transform: translateX(0) translateY(0); opacity: 0.5; } 
-            50% { transform: translateX(calc(var(--x-end) * 1px)) translateY(calc(var(--y-end) * 1px)); opacity: 0.8; } /* Move and become slightly more opaque */
-            100% { transform: translateX(0) translateY(0); opacity: 0.5; } 
+            0% { transform: translate(0, 0); opacity: 0.3; }
+            100% { transform: translate(calc(var(--x-end) * 1px), calc(var(--y-end) * 1px)); opacity: 0.7; }
         }
         
         /* Geometric Pattern Layer */
@@ -194,30 +221,31 @@
             display: flex; 
             align-items: center;
             gap: 8px;
-            padding: 8px 12px;
-            border-radius: 24px;
+            padding: 6px 8px;
+            border-radius: 9999px; /* Pill shape */
             background: var(--color-dock-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px) saturate(180%); /* Enhanced glass effect */
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid var(--color-dock-border);
             box-shadow:
-                0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                0 10px 15px -3px rgba(0, 0, 0, 0.05),
-                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-            animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+                var(--shadow-medium),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.15); /* Inner glimmer */
+            animation: fadeInUp 1.2s var(--easing-out) forwards;
             opacity: 0; 
-            transform: translateX(-50%) translateY(20px);
-            transition: transform 100ms linear, opacity 0.5s ease;
+            /* Transform is handled by JS for tilt effect, initial state set here */
+            transform: perspective(1000px) rotateX(0) rotateY(0) translateX(-50%) translateY(20px);
+            transition: opacity 0.5s ease, box-shadow 0.3s ease; /* Removed transform transition for instant JS updates */
+            will-change: transform;
         }
 
         @keyframes fadeInUp {
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 1; transform: perspective(1000px) rotateX(0) rotateY(0) translateX(-50%) translateY(0); }
         }
 
         .control-group {
             display: flex;
             gap: 4px;
-            padding: 0 4px;
+            padding: 0 6px;
             border-right: 1px solid var(--color-dock-border);
         }
         .control-group:last-child {
@@ -226,10 +254,10 @@
 
         .control-btn {
             position: relative;
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             cursor: pointer; 
-            border-radius: 12px;
+            border-radius: 50%; /* Circle for more modern look */
             background: transparent;
             display: flex; 
             justify-content: center; 
@@ -238,16 +266,20 @@
             transition: all var(--timing-fast) var(--easing-standard);
         }
 
-        .control-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: var(--color-text-primary);
-            transform: translateY(-2px);
+        /* Desktop Hover State */
+        @media (hover: hover) {
+            .control-btn:hover {
+                background-color: rgba(255, 255, 255, 0.4);
+                color: var(--color-text-primary);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-low);
+            }
         }
 
         .control-btn.active {
-            background-color: var(--color-shape-2);
+            background-color: var(--color-text-primary);
             color: var(--color-bg-1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-medium);
         }
         .control-btn:active {
             transform: scale(0.95);
@@ -309,47 +341,84 @@
             transform: scale(3000); /* Expand to cover screen */
         }
         
-        /* Theming - Dynamic CSS Variable Updates */
+        /* Theming - Refined Palettes */
         body[data-theme="dawn"] { 
-            --color-bg-1: #FDF6F3; --color-bg-2: #F4E4DC; --color-shape-1: #E8D3C8; --color-shape-2: #DCA995; --color-text-primary: #4A3B32; --color-text-secondary: #8D7B72; --color-shadow: rgba(74, 59, 50, 0.08); --color-bloom: #DCA995; --color-light-ray: rgba(255, 220, 180, 0.3); --color-dock-bg: rgba(253, 246, 243, 0.65); --color-dock-border: rgba(255, 255, 255, 0.5);
+            --color-bg-1: #FFFBF9;
+            --color-bg-2: #F6EFEC;
+            --color-shape-1: #EBE0DC;
+            --color-shape-2: #DCC8C0;
+            --color-text-primary: #4A3C35;
+            --color-text-secondary: #94857D;
+            --color-accent: #E6A08D;
+            --color-bloom: #FFEEE8;
+            --color-light-ray: rgba(255, 230, 210, 0.35);
+            --color-dock-bg: rgba(255, 251, 249, 0.8);
+            --color-dock-border: rgba(255, 255, 255, 0.6);
+            --shadow-color: 25 10% 20%;
         }
         body[data-theme="dusk"] { 
-            --color-bg-1: #1E202C; --color-bg-2: #15161E; --color-shape-1: #383B53; --color-shape-2: #7A81A8; --color-text-primary: #F0F2F5; --color-text-secondary: #A0A4B8; --color-shadow: rgba(0, 0, 0, 0.3); --color-bloom: #7A81A8; --color-light-ray: rgba(173, 216, 250, 0.12); --color-dock-bg: rgba(30, 32, 44, 0.6); --color-dock-border: rgba(255, 255, 255, 0.1);
+            --color-bg-1: #0F111A;
+            --color-bg-2: #161824;
+            --color-shape-1: #23263A;
+            --color-shape-2: #4B527E;
+            --color-text-primary: #E8EAED;
+            --color-text-secondary: #8F94A8;
+            --color-accent: #7A81A8;
+            --color-bloom: #2A2D3D;
+            --color-light-ray: rgba(180, 220, 255, 0.08);
+            --color-dock-bg: rgba(20, 22, 30, 0.7);
+            --color-dock-border: rgba(255, 255, 255, 0.08);
+            --shadow-color: 230 20% 5%;
         }
         body[data-theme="meadow"] { 
-            --color-bg-1: #F1F8F4; --color-bg-2: #E1EFE6; --color-shape-1: #C5E1D0; --color-shape-2: #88BBA0; --color-text-primary: #2C4A34; --color-text-secondary: #6B8E76; --color-shadow: rgba(44, 74, 52, 0.08); --color-bloom: #88BBA0; --color-light-ray: rgba(220, 255, 220, 0.25); --color-dock-bg: rgba(241, 248, 244, 0.65); --color-dock-border: rgba(255, 255, 255, 0.4);
+            --color-bg-1: #F4F9F6;
+            --color-bg-2: #E8F2EC;
+            --color-shape-1: #D1E6DA;
+            --color-shape-2: #A5C9B3;
+            --color-text-primary: #25382B;
+            --color-text-secondary: #657D6E;
+            --color-accent: #88BBA0;
+            --color-bloom: #E0F0E6;
+            --color-light-ray: rgba(220, 255, 230, 0.2);
+            --color-dock-bg: rgba(244, 249, 246, 0.8);
+            --color-dock-border: rgba(255, 255, 255, 0.6);
+            --shadow-color: 150 15% 15%;
         }
 
         /* --- LIGHT RAYS --- */
         #light-rays {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 140%;
             z-index: 4;
             pointer-events: none;
             opacity: 0;
-            --ray-color: var(--color-light-ray, rgba(255, 220, 180, 0.25));
-            /* Enhanced gradient structure for more realistic "God Rays" */
+            --ray-color: var(--color-light-ray);
+            /* Complex multi-layered rays */
             background:
-                conic-gradient(from 180deg at 50% -10%, transparent 40%, var(--ray-color) 50%, transparent 60%),
-                radial-gradient(circle at 50% 0%, var(--ray-color) 0%, transparent 60%);
-            background-size: 200% 200%;
-            filter: blur(40px); /* Increased blur for softness */
-            mix-blend-mode: screen; /* Or overlay/soft-light depending on bg */
+                repeating-conic-gradient(
+                    from 0deg at 50% -10%,
+                    transparent 0deg,
+                    var(--ray-color) 10deg,
+                    transparent 20deg
+                );
+            mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 80%);
+            filter: blur(60px);
+            mix-blend-mode: overlay;
             transition: opacity var(--timing-slow) var(--easing-standard);
-            animation: rayShimmer 20s ease-in-out infinite alternate;
+            animation: rayRotate 60s linear infinite;
         }
 
         body.light-rays-active #light-rays {
             opacity: 1;
         }
 
-        @keyframes rayShimmer {
-            0% { transform: translateX(-5%) scale(1.1); opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { transform: translateX(5%) scale(1.2); opacity: 0.8; }
+        @keyframes rayRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(5deg); }
         }
         /* --- END LIGHT RAYS --- */
 
@@ -375,34 +444,60 @@
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            border: 2px solid var(--color-shape-2);
+            border: 1px solid var(--color-shape-2);
             transform: translate(-50%, -50%) scale(0.8);
             opacity: 0;
             pointer-events: none;
             z-index: 5;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.8s ease;
         }
 
+        /* Inner fill */
+        #breathing-ring::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--color-shape-2);
+            opacity: 0.05;
+            transform: scale(0.8);
+            transition: transform 0.1s;
+        }
+
+        /* Outer echo ring */
         #breathing-ring::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            inset: -20px;
             border-radius: 50%;
-            background: var(--color-shape-2);
-            opacity: 0.1;
+            border: 1px solid var(--color-shape-2);
+            opacity: 0;
+            transform: scale(0.9);
         }
 
         body.focus-mode-active #breathing-ring {
             opacity: 1;
-            animation: breatheAnimation 16s infinite ease-in-out;
+            animation: breatheMain 16s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
         }
 
-        @keyframes breatheAnimation {
-            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } /* Start Inhale */
-            25% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } /* Inhale Complete */
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } /* Hold */
-            75% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } /* Exhale Complete */
-            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } /* Hold */
+        body.focus-mode-active #breathing-ring::after {
+            animation: breatheEcho 16s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        @keyframes breatheMain {
+            0% { transform: translate(-50%, -50%) scale(0.8); border-color: color-mix(in srgb, var(--color-shape-2), transparent 70%); }
+            25% { transform: translate(-50%, -50%) scale(1.15); border-color: var(--color-shape-2); } /* Inhale */
+            50% { transform: translate(-50%, -50%) scale(1.15); } /* Hold */
+            75% { transform: translate(-50%, -50%) scale(0.8); border-color: color-mix(in srgb, var(--color-shape-2), transparent 70%); } /* Exhale */
+            100% { transform: translate(-50%, -50%) scale(0.8); } /* Hold */
+        }
+
+        @keyframes breatheEcho {
+            0% { transform: scale(0.9); opacity: 0; }
+            25% { transform: scale(1.25); opacity: 0.3; }
+            50% { transform: scale(1.25); opacity: 0.3; }
+            75% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(0.9); opacity: 0; }
         }
 
         body.focus-mode-active .controls {
@@ -434,12 +529,72 @@
         }
         /* --- END FOCUS MODE STYLES --- */
 
-        /* Responsive Adjustments for Smaller Screens */
+        /* Responsive Adjustments for Mobile */
         @media (max-width: 768px) {
-            h1 { font-size: 14vw; } /* Larger font for mobile H1 */
-            p { font-size: 3vw; letter-spacing: 0.3vw; } /* Larger font for mobile paragraph */
-            .control-leaf { width: 50px; height: 50px; } /* Smaller control buttons */
-            .control-leaf svg { width: 24px; height: 24px; } /* Smaller icons */
+            /* Typography optimizations for portrait reading */
+            h1 {
+                font-size: 14vw;
+                line-height: 1.1;
+                margin-bottom: 1rem;
+            }
+            p {
+                font-size: 1.125rem;
+                letter-spacing: 0.01em;
+                padding: 0 20px;
+                max-width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            /* Enhanced Touch Targets for Mobile */
+            .controls {
+                bottom: 2.5rem; /* Raise slightly above home indicator */
+                padding: 8px 10px;
+                gap: 6px;
+                /* Optimize glass effect for mobile performance */
+                backdrop-filter: blur(16px) saturate(160%);
+                -webkit-backdrop-filter: blur(16px) saturate(160%);
+                width: auto;
+                max-width: 90vw;
+            }
+
+            .control-btn {
+                width: 48px; /* Standard 48px touch target */
+                height: 48px;
+            }
+
+            .control-btn svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .control-group {
+                padding: 0 6px;
+                gap: 8px;
+            }
+
+            /* Disable tooltip on mobile to prevent sticky states */
+            .control-btn::after {
+                display: none;
+            }
+
+            /* Simplify complex effects for battery/performance */
+            #background-canvas {
+                animation: meshFlow 80s ease-in-out infinite alternate; /* Slower animation */
+            }
+
+            /* Ensure noise is subtle on high-density screens */
+            #noise-overlay {
+                opacity: 0.04;
+            }
+        }
+
+        /* Touch-specific interaction refinements */
+        @media (hover: none) and (pointer: coarse) {
+            .control-btn:active {
+                transform: scale(0.92); /* More feedback on touch */
+                background-color: rgba(255, 255, 255, 0.2);
+            }
         }
     </style>
 </head>
@@ -568,11 +723,18 @@
             // Update focus toggle button state (handled by toggleFocusMode itself)
         }
 
-        /* --- PARALLAX EFFECT --- */
+        /* --- PARALLAX & TILT EFFECT --- */
         let targetX = 0;
         let targetY = 0;
         let currentX = 0;
         let currentY = 0;
+
+        // Tilt variables
+        const controlsEl = document.querySelector('.controls');
+        let tiltX = 0;
+        let tiltY = 0;
+        let currentTiltX = 0;
+        let currentTiltY = 0;
 
         /**
          * Handles mouse and touch movements to update target coordinates.
@@ -583,12 +745,32 @@
             if (isFocusModeActive) return; 
 
             const { clientX, clientY } = coords;
-            // Calculate normalized coordinates (-0.5 to 0.5)
-            targetX = (clientX / window.innerWidth) - 0.5;
-            targetY = (clientY / window.innerHeight) - 0.5;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            // Calculate normalized coordinates (-0.5 to 0.5) for parallax
+            targetX = (clientX / windowWidth) - 0.5;
+            targetY = (clientY / windowHeight) - 0.5;
+
+            // Calculate tilt based on mouse position relative to controls
+            // We want the controls to tilt towards the mouse
+            const controlsRect = controlsEl.getBoundingClientRect();
+            const controlsCenterX = controlsRect.left + controlsRect.width / 2;
+            const controlsCenterY = controlsRect.top + controlsRect.height / 2;
             
+            // Max tilt angle in degrees
+            const maxTilt = 8;
+
+            // Calculate distance normalized (-1 to 1)
+            const deltaX = (clientX - controlsCenterX) / (windowWidth / 2);
+            const deltaY = (clientY - controlsCenterY) / (windowHeight / 2);
+
+            // Invert Y because positive Y is down
+            tiltX = deltaY * maxTilt;
+            tiltY = -deltaX * maxTilt;
+
             // Update CSS var for light rays
-            const mouseXPercent = (clientX / window.innerWidth) * 100;
+            const mouseXPercent = (clientX / windowWidth) * 100;
             lightRays.style.setProperty('--mouse-x', `${mouseXPercent}%`);
         }
 
@@ -600,23 +782,51 @@
         function animateParallax() {
             if (!isFocusModeActive) {
                 // Smoothly interpolate current towards target
-                // 0.05 is the "smoothness" factor - lower is smoother/slower
-                currentX = lerp(currentX, targetX, 0.05);
-                currentY = lerp(currentY, targetY, 0.05);
+                // 0.035 is smoother than 0.05
+                currentX = lerp(currentX, targetX, 0.035);
+                currentY = lerp(currentY, targetY, 0.035);
+
+                // Interpolate tilt
+                currentTiltX = lerp(currentTiltX, tiltX, 0.05);
+                currentTiltY = lerp(currentTiltY, tiltY, 0.05);
 
                 const multipliers = { 
-                    'background-canvas': 30,
-                    'main': -12,
-                    'controls': -6
+                    'background-canvas': 40, // Increased depth
+                    'main': -15,
+                    // 'controls': -6 // Controls are handled separately now
                 };
 
                 parallaxLayers.forEach(layer => {
+                    // Skip controls in the generic loop to handle it specially
+                    if (layer.classList.contains('controls')) return;
+
                     const multiplier = multipliers[layer.id] || multipliers[layer.className.split(' ')[0]];
                     if (layer && layer.style && multiplier) {
-                        // Use translate3d for hardware acceleration
                         layer.style.transform = `translate3d(${currentX * multiplier}px, ${currentY * multiplier}px, 0)`;
                     }
                 });
+
+                // Apply specific transform to controls (parallax position + 3D tilt)
+                // Note: We need to maintain the centering translateX(-50%)
+                const controlsParallaxX = currentX * -8;
+                const controlsParallaxY = currentY * -8;
+
+                // Only apply tilt on larger screens (desktop) where mouse is primary
+                if (window.innerWidth > 768) {
+                    controlsEl.style.transform = `
+                        perspective(1000px)
+                        translateX(calc(-50% + ${controlsParallaxX}px))
+                        translateY(${controlsParallaxY}px)
+                        rotateX(${currentTiltX}deg)
+                        rotateY(${currentTiltY}deg)
+                    `;
+                } else {
+                    // Mobile: just parallax, no tilt, keep flat
+                    controlsEl.style.transform = `
+                        translateX(calc(-50% + ${controlsParallaxX}px))
+                        translateY(${controlsParallaxY}px)
+                    `;
+                }
             }
             requestAnimationFrame(animateParallax);
         }
