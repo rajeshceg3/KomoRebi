@@ -529,6 +529,117 @@
         }
         /* --- END FOCUS MODE STYLES --- */
 
+        /* --- ENTRAINMENT (BRAINWAVE) MODULE STYLES --- */
+        #entrainment-menu {
+            position: absolute;
+            bottom: 140%; /* Above the dock with some spacing */
+            left: 50%;
+            transform: translateX(-50%) translateY(10px) scale(0.95);
+            display: flex;
+            gap: 16px;
+            padding: 16px 20px;
+            background: var(--color-dock-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--color-dock-border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-medium);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 19; /* Below dock z-index(20) but above content */
+        }
+
+        #entrainment-menu.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .entrainment-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            width: 52px;
+            position: relative;
+        }
+
+        .entrainment-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .entrainment-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .entrainment-hz {
+            font-size: 9px;
+            opacity: 0.5;
+            margin-top: -4px;
+        }
+
+        @media (hover: hover) {
+            .entrainment-option:hover .entrainment-icon {
+                background: rgba(255,255,255,0.4);
+                transform: translateY(-2px);
+                color: var(--color-text-primary);
+                border-color: rgba(255,255,255,0.5);
+            }
+            .entrainment-option:hover .entrainment-label {
+                opacity: 1;
+                color: var(--color-text-primary);
+            }
+        }
+
+        .entrainment-option.active .entrainment-icon {
+            background: var(--color-text-primary);
+            color: var(--color-bg-1);
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .entrainment-option.active .entrainment-label {
+             color: var(--color-text-primary);
+             font-weight: 700;
+             opacity: 1;
+        }
+
+        /* Visual Entrainment Overlay - Subtle strobe */
+        #entrainment-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, var(--color-shape-1), transparent 70%);
+            pointer-events: none;
+            z-index: 80; /* Below noise(90) */
+            opacity: 0;
+            mix-blend-mode: screen;
+            transition: opacity 0.5s ease;
+        }
+        /* --- END ENTRAINMENT MODULE STYLES --- */
+
         /* Responsive Adjustments for Mobile */
         @media (max-width: 768px) {
             /* Typography optimizations for portrait reading */
@@ -612,6 +723,9 @@
     <!-- Noise Overlay -->
     <div id="noise-overlay"></div>
 
+    <!-- Visual Entrainment Overlay -->
+    <div id="entrainment-overlay"></div>
+
     <!-- Geometric Pattern Layer (initially hidden) -->
     <div id="geometric-pattern">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -638,6 +752,30 @@
     <!-- Control Buttons Layer -->
     <div class="controls parallax-layer">
         <!-- Theme Buttons Group -->
+        <!-- Entrainment Menu (Pop-up) -->
+        <div id="entrainment-menu">
+            <div class="entrainment-option" data-mode="gamma">
+                <div class="entrainment-icon" style="color: #FFD700;">G</div>
+                <div class="entrainment-label">Focus</div>
+                <div class="entrainment-hz">40Hz</div>
+            </div>
+            <div class="entrainment-option" data-mode="beta">
+                <div class="entrainment-icon" style="color: #00BFFF;">B</div>
+                <div class="entrainment-label">Alert</div>
+                <div class="entrainment-hz">20Hz</div>
+            </div>
+            <div class="entrainment-option" data-mode="alpha">
+                <div class="entrainment-icon" style="color: #32CD32;">A</div>
+                <div class="entrainment-label">Flow</div>
+                <div class="entrainment-hz">10Hz</div>
+            </div>
+            <div class="entrainment-option" data-mode="theta">
+                <div class="entrainment-icon" style="color: #9370DB;">T</div>
+                <div class="entrainment-label">Dream</div>
+                <div class="entrainment-hz">5Hz</div>
+            </div>
+        </div>
+
         <div class="control-group">
             <div class="control-btn" id="theme-dawn" aria-label="Dawn">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -660,6 +798,10 @@
                 <svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.828-6.172l-2.122 2.122m-8.1 8.1l-2.122 2.122m0-12.244l2.122 2.122m8.1 8.1l2.122 2.122M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path></svg>
             </div>
 
+            <div class="control-btn" id="toggle-brain" aria-label="Brainwave Entrainment">
+                <svg viewBox="0 0 24 24"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2A2.5 2.5 0 0 0 14.5 2Z"></path></svg>
+            </div>
+
             <div class="control-btn" id="toggle-focus" aria-label="Focus Mode">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
             </div>
@@ -677,6 +819,145 @@
     <div id="theme-bloom"></div>
 
     <script>
+    // --- ENTRAINMENT ENGINE SUB-MODULE ---
+    class EntrainmentEngine {
+        constructor(ctx, destination) {
+            this.ctx = ctx;
+            this.destination = destination;
+            this.activeNodes = [];
+            this.currentMode = null;
+            this.gainNode = null;
+            this.visualOverlay = document.getElementById('entrainment-overlay');
+            this.pulseInterval = null;
+            this.cleanupTimer = null;
+        }
+
+        init() {
+            if (this.gainNode) return;
+            this.gainNode = this.ctx.createGain();
+            this.gainNode.gain.value = 0;
+            this.gainNode.connect(this.destination);
+        }
+
+        setMode(modeData) {
+            // Stop existing, but ensure any pending cleanup is cancelled immediately
+            // so we don't kill the new nodes we are about to create.
+            if (this.cleanupTimer) {
+                clearTimeout(this.cleanupTimer);
+                this.cleanupTimer = null;
+            }
+            this.stop(true);
+
+            if (!modeData) return;
+            this.init();
+
+            const now = this.ctx.currentTime;
+            this.currentMode = modeData;
+            this.gainNode.gain.cancelScheduledValues(now);
+            this.gainNode.gain.setValueAtTime(0, now);
+            this.gainNode.gain.linearRampToValueAtTime(0.15, now + 2); // Fade in
+
+            // Carrier Frequency (Base tone)
+            const carrierFreq = modeData.carrier;
+            // Beat Frequency (The difference)
+            const beatFreq = modeData.rate;
+
+            // Left Ear (Carrier)
+            const oscL = this.ctx.createOscillator();
+            oscL.type = 'sine';
+            oscL.frequency.value = carrierFreq;
+
+            const panL = this.ctx.createStereoPanner();
+            panL.pan.value = -1; // Hard Left
+
+            // Right Ear (Carrier + Beat)
+            const oscR = this.ctx.createOscillator();
+            oscR.type = 'sine';
+            oscR.frequency.value = carrierFreq + beatFreq;
+
+            const panR = this.ctx.createStereoPanner();
+            panR.pan.value = 1; // Hard Right
+
+            // Connect graph
+            oscL.connect(panL);
+            panL.connect(this.gainNode);
+
+            oscR.connect(panR);
+            panR.connect(this.gainNode);
+
+            oscL.start(now);
+            oscR.start(now);
+
+            this.activeNodes.push(oscL, oscR, panL, panR);
+
+            // Start Visual Entrainment
+            this.startVisuals(beatFreq);
+        }
+
+        stop(fade = false) {
+            // Cancel any pending cleanup from a previous stop call
+            if (this.cleanupTimer) {
+                clearTimeout(this.cleanupTimer);
+                this.cleanupTimer = null;
+            }
+
+            if (this.pulseInterval) {
+                clearInterval(this.pulseInterval);
+                this.pulseInterval = null;
+                this.visualOverlay.style.opacity = 0;
+            }
+
+            if (!this.gainNode) return;
+
+            const now = this.ctx.currentTime;
+
+            if (fade) {
+                this.gainNode.gain.cancelScheduledValues(now);
+                this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
+                this.gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                this.cleanupTimer = setTimeout(() => {
+                    this.cleanup();
+                    this.cleanupTimer = null;
+                }, 550);
+            } else {
+                this.gainNode.gain.value = 0;
+                this.cleanup();
+            }
+            this.currentMode = null;
+        }
+
+        cleanup() {
+            this.activeNodes.forEach(node => {
+                try {
+                    if (node.stop) node.stop();
+                    node.disconnect();
+                } catch(e) {}
+            });
+            this.activeNodes = [];
+        }
+
+        startVisuals(hz) {
+            // Visual entrainment using opacity pulses matching Hz
+            // Note: CSS transitions might be too slow for >10Hz, so we use requestAnimationFrame or fast intervals
+            // For stability, we'll use a CSS animation injection or simple JS toggle
+
+            const periodMs = 1000 / hz;
+
+            // Limit visual strobe for safety (cap at 15Hz for visuals, even if audio is 40Hz)
+            // Gamma (40Hz) visual strobe is annoying/dangerous. We'll use a sub-harmonic.
+            let visualHz = hz;
+            while (visualHz > 12) visualHz /= 2;
+
+            const visualPeriodMs = 1000 / visualHz;
+            let isOn = false;
+
+            this.pulseInterval = setInterval(() => {
+                isOn = !isOn;
+                this.visualOverlay.style.opacity = isOn ? '0.15' : '0';
+            }, visualPeriodMs / 2);
+        }
+    }
+
     // --- SOUND ENGINE ---
     class SoundEngine {
         constructor() {
@@ -684,6 +965,7 @@
             this.masterGain = null;
             this.spatialPanner = null;
             this.filterNode = null;
+            this.entrainment = null; // New Module
             this.isMuted = true;
             this.currentNodes = [];
             this.activeTheme = 'dawn';
@@ -710,6 +992,9 @@
             this.filterNode.connect(this.spatialPanner);
             this.spatialPanner.connect(this.masterGain);
             this.masterGain.connect(this.ctx.destination);
+
+            // Init Entrainment (Connects directly to destination to bypass spatial/filter effects of the environment)
+            this.entrainment = new EntrainmentEngine(this.ctx, this.ctx.destination);
 
             // Generate White/Pink Noise Buffer for reuse
             this.createNoiseBuffer();
@@ -757,6 +1042,9 @@
             this.masterGain.gain.cancelScheduledValues(now);
             this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
             this.masterGain.gain.linearRampToValueAtTime(0, now + 1); // Fade out
+
+            // Stop entrainment too
+            if (this.entrainment) this.entrainment.stop(true);
 
             // Cleanup nodes after fade
             setTimeout(() => this.stopAllNodes(), 1100);
@@ -949,6 +1237,18 @@
         const iconSoundOn = document.getElementById('icon-sound-on');
         const focusPromptEl = document.getElementById('focus-prompt');
 
+        // Entrainment UI
+        const entrainmentMenu = document.getElementById('entrainment-menu');
+        const toggleBrainButton = document.getElementById('toggle-brain');
+        const entrainmentOptions = document.querySelectorAll('.entrainment-option');
+
+        const ENTRAINMENT_MODES = {
+            gamma: { name: 'Hyperfocus', rate: 40, carrier: 440 }, // Gold
+            beta: { name: 'Alert', rate: 20, carrier: 330 }, // Blue
+            alpha: { name: 'Flow', rate: 10, carrier: 220 }, // Green
+            theta: { name: 'Dream', rate: 5, carrier: 147 }  // Purple
+        };
+
         // Initialize Sound Engine
         const soundEngine = new SoundEngine();
 
@@ -1001,6 +1301,22 @@
             } else {
                 toggleRaysButton.classList.remove('active');
             }
+
+            // Update Brainwave Button
+            if (soundEngine.entrainment && soundEngine.entrainment.currentMode) {
+                toggleBrainButton.classList.add('active');
+            } else {
+                toggleBrainButton.classList.remove('active');
+            }
+
+            // Sync Entrainment Menu Options
+            entrainmentOptions.forEach(opt => {
+                if (soundEngine.entrainment && soundEngine.entrainment.currentMode === ENTRAINMENT_MODES[opt.dataset.mode]) {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
 
             // Update focus toggle button state (handled by toggleFocusMode itself)
         }
@@ -1213,6 +1529,45 @@
 
         // Event listener for light rays toggle button
         toggleRaysButton.addEventListener('click', toggleLightRays);
+
+        // --- ENTRAINMENT UI LOGIC ---
+        toggleBrainButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            entrainmentMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!entrainmentMenu.contains(e.target) && !toggleBrainButton.contains(e.target)) {
+                entrainmentMenu.classList.remove('active');
+            }
+        });
+
+        entrainmentOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                const modeKey = opt.dataset.mode;
+                const modeData = ENTRAINMENT_MODES[modeKey];
+
+                // Ensure engine is initialized
+                if (!soundEngine.ctx) soundEngine.init();
+
+                // If clicking active, toggle off
+                if (opt.classList.contains('active')) {
+                    opt.classList.remove('active');
+                    soundEngine.entrainment.stop(true);
+                } else {
+                    // Activate new mode
+                    entrainmentOptions.forEach(o => o.classList.remove('active'));
+                    opt.classList.add('active');
+
+                    // Resume audio context if needed
+                    if (soundEngine.ctx.state === 'suspended') soundEngine.ctx.resume();
+
+                    soundEngine.entrainment.setMode(modeData);
+                }
+                updateControlActiveStates();
+            });
+        });
 
         // --- DUST MOTES GENERATION ---
         const numMotes = 30; // Number of dust motes to generate
