@@ -11,9 +11,9 @@ To demonstrate how minimal, efficient code can produce profound user experiences
 -   **Mesh Gradients:** Smoothly animating background colors that shift with the "Dawn", "Dusk", and "Meadow" themes.
 -   **Parallax Depth:** Multi-layered environment (Dust Motes, Background, UI) that reacts to mouse movement with realistic depth perception.
 -   **Atmospherics:** Procedural light rays and subtle film grain noise to add texture and warmth.
--   **Geometric Patterns:** Optional sacred geometry overlays for visual anchoring.
+-   **Audio-Reactive Mandalas:** Generative sacred geometry that pulses, rotates, and evolves in perfect synchronization with the audio frequencies (Bass, Mids, Treble).
 
-### "Resonance" Audio Engine (New)
+### "Resonance" Audio Engine
 A custom-built, generative audio system powered by the Web Audio API.
 -   **Procedural Soundscapes:** Real-time synthesis of ambient textures. No external audio files are used.
     -   *Dawn:* Ethereal sine waves and random chimes.
@@ -30,8 +30,8 @@ A custom-built, generative audio system powered by the Web Audio API.
 -   **Zero Dependencies:** No frameworks, no build steps, no external assets (fonts loaded via Google Fonts).
 -   **Performance:**
     -   GPU-accelerated animations (`transform`, `will-change`).
-    -   RequestAnimationFrame loops for parallax and audio spatialization.
-    -   Procedural generation for both visuals (SVG patterns) and audio (Oscillators/Buffers).
+    -   RequestAnimationFrame loops for parallax, audio spatialization, and canvas rendering.
+    -   Procedural generation for both visuals (Canvas API) and audio (Oscillators/Buffers).
 
 ## Usage
 Simply open `index.html` in any modern web browser.
