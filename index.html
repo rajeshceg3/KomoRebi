@@ -170,11 +170,14 @@
             pointer-events: none; 
         }
         body.pattern-active #geometric-pattern { 
-            opacity: 0.15; /* Visible when active */
+            opacity: 1; /* Let canvas control opacity for dynamic range */
         }
-        #geometric-pattern svg { 
+        #geometric-pattern svg,
+        #visualizer-canvas {
             width: 100%; 
             height: 100%; 
+        }
+        #geometric-pattern svg {
             stroke: var(--color-text-secondary); /* Pattern lines color */
         }
         
@@ -728,16 +731,7 @@
 
     <!-- Geometric Pattern Layer (initially hidden) -->
     <div id="geometric-pattern">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <!-- Define a pattern of dots -->
-                <pattern id="dot-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <circle cx="2" cy="2" r="1" fill="currentColor"/>
-                </pattern>
-            </defs>
-            <!-- Apply the dot pattern to a full-size rectangle -->
-            <rect width="100%" height="100%" fill="url(#dot-pattern)" />
-        </svg>
+        <canvas id="visualizer-canvas"></canvas>
     </div>
 
     <!-- Main Content Layer -->
@@ -958,6 +952,188 @@
         }
     }
 
+    // --- VISUALIZER ENGINE ---
+    class VisualizerEngine {
+        constructor(canvas, soundEngine) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.soundEngine = soundEngine;
+            this.isActive = false;
+            this.animationId = null;
+            this.rotation = 0;
+
+            // Smoothed values for cleaner animation
+            this.smoothBass = 0;
+            this.smoothMid = 0;
+            this.smoothTreble = 0;
+            this.colors = {}; // Cache for colors
+
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.updateThemeColors(); // Initial color fetch
+        }
+
+        updateThemeColors() {
+            const style = getComputedStyle(document.body);
+            this.colors = {
+                bass: style.getPropertyValue('--color-shape-2').trim(),
+                mid: style.getPropertyValue('--color-text-secondary').trim(),
+                treble: style.getPropertyValue('--color-text-primary').trim()
+            };
+        }
+
+        resize() {
+            const dpr = window.devicePixelRatio || 1;
+            // Set actual size in memory (scaled to account for extra pixel density)
+            this.canvas.width = window.innerWidth * dpr;
+            this.canvas.height = window.innerHeight * dpr;
+
+            // Normalize coordinate system to use css pixels
+            this.ctx.scale(dpr, dpr);
+
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+        }
+
+        start() {
+            if (this.isActive) return;
+            this.isActive = true;
+            this.loop();
+        }
+
+        stop() {
+            this.isActive = false;
+            if (this.animationId) cancelAnimationFrame(this.animationId);
+            this.ctx.clearRect(0, 0, this.width, this.height);
+        }
+
+        loop() {
+            if (!this.isActive) return;
+            this.draw();
+            this.animationId = requestAnimationFrame(() => this.loop());
+        }
+
+        draw() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+
+            // Get Audio Data
+            const data = this.soundEngine.getAudioData();
+
+            // Smooth the data (Linear Interpolation)
+            this.smoothBass += (data.bass - this.smoothBass) * 0.1;
+            this.smoothMid += (data.mid - this.smoothMid) * 0.1;
+            this.smoothTreble += (data.treble - this.smoothTreble) * 0.1;
+
+            const centerX = this.width / 2;
+            const centerY = this.height / 2;
+            const maxRadius = Math.min(this.width, this.height) * 0.45;
+
+            // Update global rotation
+            this.rotation += 0.002 + (this.smoothMid * 0.01);
+
+            // Layer 1: Bass Pulse (Outer Flower)
+            // Expands with Bass
+            this.drawMandalaLayer({
+                ctx: this.ctx,
+                cx: centerX,
+                cy: centerY,
+                radius: maxRadius * (0.8 + this.smoothBass * 0.3),
+                points: 12,
+                rotation: this.rotation,
+                color: this.colors.bass,
+                alpha: 0.15 + (this.smoothBass * 0.25), // Reduced alpha since color is darker
+                curve: 0.5, // 0 = straight, 1 = circle
+                filled: true
+            });
+
+            // Layer 2: Mid-Range Geometry (Rotating Star)
+            this.drawMandalaLayer({
+                ctx: this.ctx,
+                cx: centerX,
+                cy: centerY,
+                radius: maxRadius * (0.6 + this.smoothMid * 0.2),
+                points: 8,
+                rotation: -this.rotation * 1.5,
+                color: this.colors.mid,
+                alpha: 0.4 + (this.smoothMid * 0.3),
+                curve: 0, // Sharp star
+                stroke: true,
+                width: 2
+            });
+
+            // Layer 3: Treble Details (Inner fast spinning)
+            this.drawMandalaLayer({
+                ctx: this.ctx,
+                cx: centerX,
+                cy: centerY,
+                radius: maxRadius * (0.3 + this.smoothTreble * 0.2),
+                points: 6,
+                rotation: this.rotation * 3,
+                color: this.colors.treble,
+                alpha: 0.5 + (this.smoothTreble * 0.4),
+                curve: 0.2,
+                stroke: true,
+                width: 1.5
+            });
+
+            // Center Core
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, maxRadius * 0.05 * (1 + data.rms), 0, Math.PI * 2);
+            this.ctx.fillStyle = this.colors.treble;
+            this.ctx.globalAlpha = 0.4 + data.rms;
+            this.ctx.fill();
+            this.ctx.globalAlpha = 1;
+        }
+
+        drawMandalaLayer({ ctx, cx, cy, radius, points, rotation, color, alpha, curve, filled, stroke, width }) {
+            ctx.beginPath();
+            ctx.globalAlpha = alpha;
+            if (filled) ctx.fillStyle = color;
+            if (stroke) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width || 1;
+            }
+
+            const step = (Math.PI * 2) / points;
+
+            for (let i = 0; i <= points; i++) {
+                const angle = (i * step) + rotation;
+                // Basic polar to cartesian
+                const x = cx + Math.cos(angle) * radius;
+                const y = cy + Math.sin(angle) * radius;
+
+                // Control points for curves (midpoints)
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    // Calculate previous point
+                    const prevAngle = ((i - 1) * step) + rotation;
+                    const prevX = cx + Math.cos(prevAngle) * radius;
+                    const prevY = cy + Math.sin(prevAngle) * radius;
+
+                    if (curve > 0) {
+                        // Quadratic bezier to create petal shapes
+                        // Control point is closer to center or further out
+                        const cpAngle = prevAngle + (step / 2);
+                        const cpRadius = radius * (1 - curve); // Pull in for petals
+                        const cpx = cx + Math.cos(cpAngle) * cpRadius;
+                        const cpy = cy + Math.sin(cpAngle) * cpRadius;
+
+                        ctx.quadraticCurveTo(cpx, cpy, x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+            }
+
+            ctx.closePath();
+
+            if (filled) ctx.fill();
+            if (stroke) ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+    }
+
     // --- SOUND ENGINE ---
     class SoundEngine {
         constructor() {
@@ -966,6 +1142,8 @@
             this.spatialPanner = null;
             this.filterNode = null;
             this.entrainment = null; // New Module
+            this.analyser = null; // New Analyser Node
+            this.dataArray = null; // New Data Array for FFT
             this.isMuted = true;
             this.currentNodes = [];
             this.activeTheme = 'dawn';
@@ -978,7 +1156,7 @@
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AudioContext();
 
-            // Master chain: Filter -> Panner -> MasterGain -> Destination
+            // Master chain: Filter -> Panner -> MasterGain -> Analyser -> Destination
             this.masterGain = this.ctx.createGain();
             this.masterGain.gain.value = 0;
 
@@ -989,15 +1167,65 @@
             this.filterNode.type = 'lowpass';
             this.filterNode.frequency.value = 5000; // Initial soft cutoff
 
+            // Analyser Setup
+            this.analyser = this.ctx.createAnalyser();
+            this.analyser.fftSize = 512; // Higher resolution for smoother visuals
+            this.analyser.smoothingTimeConstant = 0.85; // Smooth out jitter
+            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
             this.filterNode.connect(this.spatialPanner);
             this.spatialPanner.connect(this.masterGain);
-            this.masterGain.connect(this.ctx.destination);
+            this.masterGain.connect(this.analyser); // Connect Master to Analyser
+            this.analyser.connect(this.ctx.destination); // Connect Analyser to Output
 
             // Init Entrainment (Connects directly to destination to bypass spatial/filter effects of the environment)
             this.entrainment = new EntrainmentEngine(this.ctx, this.ctx.destination);
 
             // Generate White/Pink Noise Buffer for reuse
             this.createNoiseBuffer();
+        }
+
+        getAudioData() {
+            if (!this.analyser || this.isMuted) {
+                return { bass: 0, mid: 0, treble: 0, rms: 0 };
+            }
+
+            this.analyser.getByteFrequencyData(this.dataArray);
+
+            const binCount = this.analyser.frequencyBinCount;
+
+            // Simple frequency band division (approximate)
+            // fftSize 512 -> 256 bins. SampleRate ~48k -> Max Freq 24k. Each bin ~93Hz.
+
+            // Bass: 0 - 200Hz (approx bins 0-2)
+            let bassSum = 0;
+            const bassBins = 3;
+            for(let i=0; i<bassBins; i++) bassSum += this.dataArray[i];
+            const bass = bassSum / bassBins;
+
+            // Mid: 200Hz - 2000Hz (approx bins 3-21)
+            let midSum = 0;
+            const midStart = 3;
+            const midEnd = 22;
+            for(let i=midStart; i<midEnd; i++) midSum += this.dataArray[i];
+            const mid = midSum / (midEnd - midStart);
+
+            // Treble: 2000Hz+ (approx bins 22-255)
+            let trebleSum = 0;
+            for(let i=midEnd; i<binCount; i++) trebleSum += this.dataArray[i];
+            const treble = trebleSum / (binCount - midEnd);
+
+            // Total RMS (Volume approximation)
+            let sum = 0;
+            for(let i=0; i<binCount; i++) sum += this.dataArray[i];
+            const avg = sum / binCount;
+
+            return {
+                bass: bass / 255,   // Normalize 0-1
+                mid: mid / 255,
+                treble: treble / 255,
+                rms: avg / 255
+            };
         }
 
         createNoiseBuffer() {
@@ -1252,6 +1480,10 @@
         // Initialize Sound Engine
         const soundEngine = new SoundEngine();
 
+        // Initialize Visualizer
+        const visualizerCanvas = document.getElementById('visualizer-canvas');
+        const visualizer = new VisualizerEngine(visualizerCanvas, soundEngine);
+
         // Store original prompt text for focus mode
         const originalPromptText = focusPromptEl.textContent;
         const breathPrompts = ["Breathe In", "Hold", "Breathe Out", "Hold"];
@@ -1470,6 +1702,7 @@
             setTimeout(() => {
                 body.dataset.theme = newTheme;
                 updateControlActiveStates(); // Update active state after theme change
+                visualizer.updateThemeColors(); // Update visualizer colors
             }, varCssToMs('--timing-fast')); // Match with the fast timing for a quick transition
 
             // Remove blooming class after animation completes to reset for next bloom
@@ -1511,8 +1744,19 @@
          * Toggles the geometric pattern visibility.
          */
         function toggleGeometricPattern() {
-            body.classList.toggle('pattern-active');
+            const isActive = body.classList.toggle('pattern-active');
             updateControlActiveStates(); // Update active state of button
+
+            if (isActive) {
+                visualizer.start();
+            } else {
+                // Delay stop to allow fade out to complete
+                setTimeout(() => {
+                    if (!body.classList.contains('pattern-active')) {
+                        visualizer.stop();
+                    }
+                }, 1000);
+            }
         }
 
         // Event listener for pattern toggle button
