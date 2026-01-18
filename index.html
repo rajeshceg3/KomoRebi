@@ -643,6 +643,39 @@
         }
         /* --- END ENTRAINMENT MODULE STYLES --- */
 
+        /* --- FLOW STATE MODULE --- */
+        #flow-progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-accent), var(--color-shape-2));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 1s linear;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body.flow-active #flow-progress {
+            opacity: 1;
+        }
+
+        body.flow-active .controls {
+            transition: transform 1s var(--easing-in), opacity 1s ease;
+            transform: translateY(200px) translateX(-50%) !important;
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        body.flow-active.flow-controls-visible .controls {
+            transform: translateY(0) translateX(-50%) !important;
+            opacity: 1 !important;
+            pointer-events: auto;
+        }
+
         /* Responsive Adjustments for Mobile */
         @media (max-width: 768px) {
             /* Typography optimizations for portrait reading */
@@ -743,6 +776,9 @@
     <!-- Breathing Ring -->
     <div id="breathing-ring"></div>
 
+    <!-- Flow State Progress Horizon -->
+    <div id="flow-progress"></div>
+
     <!-- Control Buttons Layer -->
     <div class="controls parallax-layer">
         <!-- Theme Buttons Group -->
@@ -784,6 +820,10 @@
         
         <!-- Features Group -->
         <div class="control-group">
+            <div class="control-btn" id="toggle-flow" aria-label="Flow State">
+                <svg viewBox="0 0 24 24"><path d="M6 3v6l6 3 6-3V3H6zm12 18v-6l-6-3-6 3v6h12z"></path></svg>
+            </div>
+
             <div class="control-btn" id="toggle-pattern" aria-label="Patterns">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><circle cx="15.5" cy="8.5" r="1.5"></circle><circle cx="15.5" cy="15.5" r="1.5"></circle><circle cx="8.5" cy="15.5" r="1.5"></circle></svg>
             </div>
@@ -1447,6 +1487,197 @@
 
             this.currentNodes.push(noiseSrc, noiseFilter, gain, lfo, lfoGain);
         }
+
+        // --- Methods for Flow Orchestrator ---
+        setVolume(value, rampTime = 0.5) {
+            if (!this.ctx || this.isMuted) return;
+            const now = this.ctx.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.linearRampToValueAtTime(value, now + rampTime);
+        }
+
+        setFilterFreq(value, rampTime = 0.5) {
+            if (!this.ctx || this.isMuted) return;
+            const now = this.ctx.currentTime;
+            this.filterNode.frequency.cancelScheduledValues(now);
+            this.filterNode.frequency.exponentialRampToValueAtTime(value, now + rampTime);
+        }
+    }
+
+    // --- FLOW ORCHESTRATOR ---
+    class FlowOrchestrator {
+        constructor(soundEngine, entrainmentModes, onStart) {
+            this.soundEngine = soundEngine;
+            this.entrainmentModes = entrainmentModes;
+            this.onStart = onStart;
+
+            // Configuration
+            this.PHASES = {
+                IDLE: 'IDLE',
+                INDUCTION: 'INDUCTION',
+                DEEP_WORK: 'DEEP_WORK',
+                RECOVERY: 'RECOVERY'
+            };
+
+            this.durations = {
+                induction: 2 * 60 * 1000, // 2 mins
+                work: 25 * 60 * 1000,      // 25 mins
+                recovery: 3 * 60 * 1000    // 3 mins
+            };
+
+            // State
+            this.currentPhase = this.PHASES.IDLE;
+            this.startTime = 0;
+            this.phaseEndTime = 0;
+            this.isActive = false;
+            this.requestId = null;
+            this.lastBreathStep = -1;
+
+            // DOM Elements
+            this.progressEl = document.getElementById('flow-progress');
+            this.body = document.body;
+            this.promptEl = document.getElementById('focus-prompt');
+            this.originalPrompt = "A space for quiet thought";
+            this.breathPrompts = ["Breathe In", "Hold", "Breathe Out", "Hold"];
+        }
+
+        start() {
+            if (this.isActive) return;
+
+            // Handle conflicts
+            if (this.onStart) this.onStart();
+
+            // Ensure audio is running
+            if (!this.soundEngine.ctx) this.soundEngine.init();
+            if (this.soundEngine.ctx.state === 'suspended') this.soundEngine.ctx.resume();
+            if (this.soundEngine.isMuted) this.soundEngine.play();
+
+            this.isActive = true;
+            this.body.classList.add('flow-active');
+
+            // Start Induction Phase
+            this.transitionTo(this.PHASES.INDUCTION);
+            this.loop();
+        }
+
+        stop() {
+            this.isActive = false;
+            this.body.classList.remove('flow-active');
+            if (this.requestId) cancelAnimationFrame(this.requestId);
+
+            // Reset State
+            this.currentPhase = this.PHASES.IDLE;
+            this.progressEl.style.transform = 'scaleX(0)';
+            if (this.promptEl) this.promptEl.textContent = this.originalPrompt;
+
+            // Reset Audio/Visuals
+            this.soundEngine.setFocusMode(false); // Ensure breathing is off
+            if (this.soundEngine.entrainment) this.soundEngine.entrainment.stop(true);
+
+            // Restore default volume/filter just in case
+            this.soundEngine.setVolume(0.3, 1);
+            this.soundEngine.setFilterFreq(5000, 1);
+        }
+
+        toggle() {
+            if (this.isActive) this.stop();
+            else this.start();
+        }
+
+        transitionTo(phase) {
+            this.currentPhase = phase;
+            this.startTime = performance.now();
+
+            const now = performance.now();
+            let duration = 0;
+
+            switch(phase) {
+                case this.PHASES.INDUCTION:
+                    duration = this.durations.induction;
+                    // Actions: Alpha Waves, Breathing Guide On
+                    if (this.soundEngine.entrainment)
+                        this.soundEngine.entrainment.setMode(this.entrainmentModes.alpha);
+
+                    this.soundEngine.setFocusMode(true);
+                    this.soundEngine.setTheme('dawn');
+                    break;
+
+                case this.PHASES.DEEP_WORK:
+                    duration = this.durations.work;
+                    // Actions: Gamma Waves, Focus Mode OFF (Steady state), Darker Visuals
+                    if (this.soundEngine.entrainment)
+                        this.soundEngine.entrainment.setMode(this.entrainmentModes.gamma);
+
+                    this.soundEngine.setFocusMode(false); // Stop breathing pumping
+
+                    // Update text
+                    if (this.promptEl) this.promptEl.textContent = "Deep Work";
+
+                    // Deep Work Audio Settings
+                    this.soundEngine.setTheme('dusk'); // Darker drone
+                    this.soundEngine.setVolume(0.4, 2); // Slightly louder for immersion
+                    this.soundEngine.setFilterFreq(3000, 2); // Lower filter for concentration
+                    break;
+
+                case this.PHASES.RECOVERY:
+                    duration = this.durations.recovery;
+                    // Actions: Theta Waves, Lighter Visuals
+                    if (this.soundEngine.entrainment)
+                        this.soundEngine.entrainment.setMode(this.entrainmentModes.theta);
+
+                    if (this.promptEl) this.promptEl.textContent = "Recovery";
+
+                    this.soundEngine.setTheme('meadow');
+                    this.soundEngine.setVolume(0.25, 2);
+                    this.soundEngine.setFilterFreq(6000, 2); // Open up
+                    break;
+            }
+
+            this.phaseEndTime = now + duration;
+        }
+
+        loop() {
+            if (!this.isActive) return;
+
+            const now = performance.now();
+            const timeRemaining = this.phaseEndTime - now;
+
+            // Calculate Progress (0 to 1)
+            let duration = this.phaseEndTime - this.startTime;
+            let progress = 1 - (timeRemaining / duration);
+            this.progressEl.style.transform = `scaleX(${progress})`;
+
+            // Induction Breathing Logic
+            if (this.currentPhase === this.PHASES.INDUCTION) {
+                 const elapsed = now - this.startTime;
+                 // 4-step cycle: 4s, 4s, 4s, 4s = 16s loop
+                 // Existing map: 0: Inhale, 1: Hold, 2: Exhale, 3: Hold
+                 const stepDuration = 4000;
+                 const step = Math.floor((elapsed % (stepDuration * 4)) / stepDuration);
+
+                 if (this.lastBreathStep !== step) {
+                     this.soundEngine.breathingStep(step);
+                     this.lastBreathStep = step;
+                     if (this.promptEl) this.promptEl.textContent = this.breathPrompts[step];
+                 }
+            }
+
+            if (timeRemaining <= 0) {
+                this.nextPhase();
+            }
+
+            this.requestId = requestAnimationFrame(() => this.loop());
+        }
+
+        nextPhase() {
+            if (this.currentPhase === this.PHASES.INDUCTION) {
+                this.transitionTo(this.PHASES.DEEP_WORK);
+            } else if (this.currentPhase === this.PHASES.DEEP_WORK) {
+                this.transitionTo(this.PHASES.RECOVERY);
+            } else if (this.currentPhase === this.PHASES.RECOVERY) {
+                this.stop(); // Done
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1483,6 +1714,18 @@
         // Initialize Visualizer
         const visualizerCanvas = document.getElementById('visualizer-canvas');
         const visualizer = new VisualizerEngine(visualizerCanvas, soundEngine);
+
+        // Initialize Flow Orchestrator
+        const flowOrchestrator = new FlowOrchestrator(soundEngine, ENTRAINMENT_MODES, () => {
+             // Stop manual focus mode if active, but don't reset text (handled by check in toggleFocusMode)
+             if (isFocusModeActive) toggleFocusMode();
+        });
+        const toggleFlowButton = document.getElementById('toggle-flow');
+
+        toggleFlowButton.addEventListener('click', () => {
+            flowOrchestrator.toggle();
+            updateControlActiveStates();
+        });
 
         // Store original prompt text for focus mode
         const originalPromptText = focusPromptEl.textContent;
@@ -1541,6 +1784,13 @@
                 toggleBrainButton.classList.remove('active');
             }
 
+            // Update Flow Button
+            if (flowOrchestrator.isActive) {
+                toggleFlowButton.classList.add('active');
+            } else {
+                toggleFlowButton.classList.remove('active');
+            }
+
             // Sync Entrainment Menu Options
             entrainmentOptions.forEach(opt => {
                 if (soundEngine.entrainment && soundEngine.entrainment.currentMode === ENTRAINMENT_MODES[opt.dataset.mode]) {
@@ -1571,12 +1821,21 @@
          * @param {Object} coords - Object containing clientX and clientY coordinates.
          */
         function handleParallaxMove(coords) {
-            // Disable parallax input if focus mode is active
-            if (isFocusModeActive) return; 
-
             const { clientX, clientY } = coords;
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
+
+            // Flow Mode: Reveal controls on bottom hover
+            if (body.classList.contains('flow-active')) {
+                if (clientY > windowHeight - 120) {
+                    body.classList.add('flow-controls-visible');
+                } else {
+                    body.classList.remove('flow-controls-visible');
+                }
+            }
+
+            // Disable parallax input if focus mode is active
+            if (isFocusModeActive) return;
 
             // Calculate normalized coordinates (-0.5 to 0.5) for parallax
             targetX = (clientX / windowWidth) - 0.5;
@@ -1762,6 +2021,14 @@
         // Event listener for pattern toggle button
         togglePatternButton.addEventListener('click', toggleGeometricPattern);
 
+        // Escape Key to exit Flow Mode
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && flowOrchestrator.isActive) {
+                flowOrchestrator.stop();
+                updateControlActiveStates();
+            }
+        });
+
         // --- LIGHT RAYS TOGGLE ---
         /**
          * Toggles the light rays visibility.
@@ -1879,7 +2146,10 @@
                 motesContainer.classList.remove('is-holding'); // Resume mote animation
                 focusPromptEl.style.opacity = '0'; // Fade out current prompt
                 setTimeout(() => {
-                    focusPromptEl.textContent = originalPromptText; // Restore original prompt
+                    // Only restore prompt if we are not in Flow mode (which takes over the prompt)
+                    if (!document.body.classList.contains('flow-active')) {
+                        focusPromptEl.textContent = originalPromptText; // Restore original prompt
+                    }
                     focusPromptEl.style.opacity = '1'; // Fade in original prompt
                 }, 500); // Wait for fade out transition
             }
