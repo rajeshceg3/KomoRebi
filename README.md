@@ -24,6 +24,10 @@ A custom-built, generative audio system powered by the Web Audio API.
 
 ### Mindfulness Tools
 -   **Focus Mode:** A 4-7-8 inspired breathing guide that simplifies the interface and synchronizes all sensory inputs (Visual + Audio) to a calming rhythm.
+-   **Neural Resonance Bridge (HUD):** A strategic enhancement providing tactical control over the sensory experience.
+    -   **Tactical Mixer:** Granular control over Atmosphere, Binaural Entrainment, and Bio-Rhythm audio layers.
+    -   **Bio-Rhythm Generator:** A 60 BPM sub-bass pulse designed to regulate heart rate and induce grounding.
+    -   **Cognitive Telemetry:** Real-time visualization of focus depth and session duration tracking.
 
 ## Technical Architecture
 -   **Stack:** Pure HTML5, CSS3, and Vanilla JavaScript (ES6+).

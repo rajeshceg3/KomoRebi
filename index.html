@@ -532,6 +532,241 @@
         }
         /* --- END FOCUS MODE STYLES --- */
 
+        /* --- NEURAL HUD (TOC) STYLES --- */
+        #neural-hud {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 90vw;
+            max-width: 800px;
+            height: 60vh;
+            max-height: 500px;
+            background: rgba(15, 17, 26, 0.85); /* Dark technical background */
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.05) inset;
+            z-index: 150;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Inter', monospace; /* Technical feel */
+            color: #E8EAED;
+        }
+
+        #neural-hud.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .hud-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .hud-status {
+            font-size: 10px;
+            font-weight: 700;
+            color: #00FF9D; /* Cyber green */
+            background: rgba(0, 255, 157, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            letter-spacing: 0.05em;
+        }
+
+        .hud-content {
+            flex: 1;
+            display: flex;
+            padding: 24px;
+            gap: 24px;
+        }
+
+        .hud-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .hud-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .telemetry-section {
+            flex: 2;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px;
+        }
+
+        #telemetry-canvas {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            border-radius: 8px;
+            /* background: rgba(0,0,0,0.3); */
+        }
+
+        .telemetry-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: auto;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            color: #E8EAED;
+        }
+
+        .mixer-section {
+            flex: 1;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px;
+            min-width: 200px;
+        }
+
+        .faders {
+            display: flex;
+            justify-content: space-around;
+            height: 100%;
+            align-items: center;
+        }
+
+        .fader-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            gap: 12px;
+        }
+
+        .fader-track {
+            flex: 1;
+            width: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Custom Range Slider (Vertical) */
+        .vertical-range {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 150px; /* Length of slider */
+            height: 30px; /* Touch target width */
+            background: transparent;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -15px; /* Half height */
+            margin-left: -75px; /* Half width */
+            cursor: pointer;
+        }
+
+        .vertical-range:focus {
+            outline: none;
+        }
+
+        /* Track (Visual only, behind thumb) */
+        .fader-track::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            width: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Thumb Webkit */
+        .vertical-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #E8EAED;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            margin-top: -8px; /* Center on track */
+            border: 2px solid #0F111A;
+        }
+
+        /* Thumb Firefox */
+        .vertical-range::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #E8EAED;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: 2px solid #0F111A;
+        }
+
+        .fader-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            #neural-hud {
+                width: 95vw;
+                height: 80vh;
+                flex-direction: column;
+            }
+            .hud-content {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            .telemetry-section, .mixer-section {
+                flex: none;
+                height: 250px;
+            }
+        }
+
         /* --- ENTRAINMENT (BRAINWAVE) MODULE STYLES --- */
         #entrainment-menu {
             position: absolute;
@@ -779,6 +1014,55 @@
     <!-- Flow State Progress Horizon -->
     <div id="flow-progress"></div>
 
+    <!-- Neural Resonance HUD -->
+    <div id="neural-hud">
+        <div class="hud-header">
+            <span class="hud-title">NEURAL RESONANCE BRIDGE // v1.0</span>
+            <span class="hud-status">ONLINE</span>
+        </div>
+
+        <div class="hud-content">
+            <div class="hud-section telemetry-section">
+                <div class="hud-label">COGNITIVE TELEMETRY</div>
+                <canvas id="telemetry-canvas"></canvas>
+                <div class="telemetry-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">SESSION TIME</div>
+                        <div class="stat-value" id="session-timer">00:00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">DEPTH SCORE</div>
+                        <div class="stat-value" id="focus-score">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-section mixer-section">
+                <div class="hud-label">TACTICAL AUDIO MIXER</div>
+                <div class="faders">
+                    <div class="fader-group">
+                        <div class="fader-track">
+                            <input type="range" min="0" max="1" step="0.01" value="1" class="vertical-range" id="fader-atmosphere">
+                        </div>
+                        <div class="fader-label">ATMOS</div>
+                    </div>
+                    <div class="fader-group">
+                        <div class="fader-track">
+                            <input type="range" min="0" max="1" step="0.01" value="1" class="vertical-range" id="fader-entrainment">
+                        </div>
+                        <div class="fader-label">BINAURAL</div>
+                    </div>
+                    <div class="fader-group">
+                        <div class="fader-track">
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="vertical-range" id="fader-bio">
+                        </div>
+                        <div class="fader-label">BIO</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Control Buttons Layer -->
     <div class="controls parallax-layer">
         <!-- Theme Buttons Group -->
@@ -830,6 +1114,10 @@
 
             <div class="control-btn" id="toggle-rays" aria-label="Light Rays">
                 <svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.828-6.172l-2.122 2.122m-8.1 8.1l-2.122 2.122m0-12.244l2.122 2.122m8.1 8.1l2.122 2.122M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path></svg>
+            </div>
+
+            <div class="control-btn" id="toggle-hud" aria-label="Neural Bridge">
+                <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
             </div>
 
             <div class="control-btn" id="toggle-brain" aria-label="Brainwave Entrainment">
@@ -989,6 +1277,231 @@
                 isOn = !isOn;
                 this.visualOverlay.style.opacity = isOn ? '0.15' : '0';
             }, visualPeriodMs / 2);
+        }
+    }
+
+    // --- TELEMETRY SYSTEM ---
+    class TelemetrySystem {
+        constructor(soundEngine, flowOrchestrator) {
+            this.soundEngine = soundEngine;
+            this.flow = flowOrchestrator;
+            this.canvas = document.getElementById('telemetry-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.timerEl = document.getElementById('session-timer');
+            this.scoreEl = document.getElementById('focus-score');
+
+            this.startTime = null;
+            this.accumulatedScore = 0;
+            this.history = []; // Array of intensity values
+            this.maxHistory = 100; // Resolution
+
+            // Wait for layout
+            setTimeout(() => this.resize(), 100);
+            window.addEventListener('resize', () => this.resize());
+
+            this.loopId = requestAnimationFrame(() => this.loop());
+
+            // Timer interval
+            setInterval(() => this.updateTimer(), 1000);
+        }
+
+        resize() {
+            if (!this.canvas.parentElement) return;
+            const rect = this.canvas.parentElement.getBoundingClientRect();
+            // Handle hidden element (hud closed)
+            if (rect.width === 0) return;
+
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
+            this.maxHistory = Math.floor(rect.width / 4); // 4px per point
+        }
+
+        getInstantaneousIntensity() {
+            let intensity = 0;
+            if (this.soundEngine && !this.soundEngine.isMuted) {
+                intensity += 1;
+                // Add spectral flux (make it reactive)
+                const audioData = this.soundEngine.getAudioData();
+                intensity += audioData.rms * 2;
+
+                if (this.soundEngine.entrainment && this.soundEngine.entrainment.currentMode) intensity += 1;
+                if (this.flow.isActive) intensity += 1.5;
+                if (this.soundEngine.bioRhythmInterval) intensity += 0.5;
+            }
+            // Add some neural noise
+            intensity += (Math.random() - 0.5) * 0.2;
+            return Math.max(0.1, intensity); // Baseline 0.1
+        }
+
+        updateTimer() {
+            if (this.soundEngine && !this.soundEngine.isMuted) {
+                if (!this.startTime) this.startTime = Date.now();
+
+                const diff = Math.floor((Date.now() - this.startTime) / 1000);
+                const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+                const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+                const s = (diff % 60).toString().padStart(2, '0');
+
+                this.timerEl.textContent = `${h}:${m}:${s}`;
+
+                // Update Score
+                let multiplier = 1;
+                if (this.flow.isActive) multiplier = 2;
+                if (this.soundEngine.entrainment.currentMode) multiplier += 0.5;
+
+                this.accumulatedScore += 0.1 * multiplier;
+                this.scoreEl.textContent = this.accumulatedScore.toFixed(1);
+
+            } else {
+                // Pause timer logic (do nothing, preserve startTime? or reset?)
+                // If muted, we effectively pause "session accumulation"
+                // To keep it simple, we just don't update.
+                if (this.soundEngine.isMuted) {
+                   this.startTime = null; // Resets the "current session duration" visual if stopped
+                   // But maybe we want to persist?
+                   // Let's reset for "new session" feel on stop.
+                }
+            }
+        }
+
+        loop() {
+            // Update Graph
+            const intensity = this.getInstantaneousIntensity();
+            this.history.push(intensity);
+
+            // Check resize if history gets too long relative to width (lazy resize)
+            if (this.canvas.width === 0) this.resize();
+
+            if (this.history.length > this.maxHistory) this.history.shift();
+
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+
+        draw() {
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            this.ctx.clearRect(0, 0, w, h);
+
+            if (w === 0) return;
+
+            this.ctx.strokeStyle = '#00FF9D';
+            this.ctx.lineWidth = 2;
+            this.ctx.lineJoin = 'round';
+            this.ctx.beginPath();
+
+            const step = w / (this.maxHistory - 1);
+
+            // Start path
+            for (let i = 0; i < this.history.length; i++) {
+                const val = this.history[i];
+                // Map intensity 0-5 to height (with padding)
+                // Invert Y (canvas coords)
+                const y = h - (val / 5 * (h * 0.8)) - (h * 0.1);
+
+                if (i === 0) this.ctx.moveTo(0, y);
+                else this.ctx.lineTo(i * step, y);
+            }
+
+            this.ctx.stroke();
+
+            // Draw Gradient fill (Cyberpunk style)
+            if (this.history.length > 1) {
+                this.ctx.lineTo((this.history.length - 1) * step, h);
+                this.ctx.lineTo(0, h);
+                this.ctx.closePath();
+                const grad = this.ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, 'rgba(0, 255, 157, 0.2)');
+                grad.addColorStop(1, 'rgba(0, 255, 157, 0.0)');
+                this.ctx.fillStyle = grad;
+                this.ctx.fill();
+            }
+        }
+    }
+
+    // --- NEURAL HUD SYSTEM ---
+    class NeuralHUD {
+        constructor(soundEngine) {
+            this.soundEngine = soundEngine;
+            this.el = document.getElementById('neural-hud');
+            this.toggleBtn = document.getElementById('toggle-hud');
+            this.isActive = false;
+
+            // Faders
+            this.faders = {
+                atmosphere: document.getElementById('fader-atmosphere'),
+                entrainment: document.getElementById('fader-entrainment'),
+                bio: document.getElementById('fader-bio')
+            };
+
+            this.init();
+        }
+
+        init() {
+            // Toggle Logic
+            this.toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggle();
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (this.isActive &&
+                    !this.el.contains(e.target) &&
+                    !this.toggleBtn.contains(e.target)) {
+                    this.toggle(false);
+                }
+            });
+
+            // Fader Logic
+            this.faders.atmosphere.addEventListener('input', (e) => {
+                if (this.soundEngine.atmosphereGain) {
+                    this.soundEngine.atmosphereGain.gain.setTargetAtTime(
+                        parseFloat(e.target.value),
+                        this.soundEngine.ctx.currentTime,
+                        0.1
+                    );
+                }
+            });
+
+            this.faders.entrainment.addEventListener('input', (e) => {
+                if (this.soundEngine.entrainmentGain) {
+                    this.soundEngine.entrainmentGain.gain.setTargetAtTime(
+                        parseFloat(e.target.value),
+                        this.soundEngine.ctx.currentTime,
+                        0.1
+                    );
+                }
+            });
+
+            this.faders.bio.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                if (this.soundEngine.biorhythmGain) {
+                    this.soundEngine.biorhythmGain.gain.setTargetAtTime(
+                        val,
+                        this.soundEngine.ctx.currentTime,
+                        0.1
+                    );
+                }
+
+                // Smart Logic: If Bio is turned up, start the rhythm if it's off (and sound is on)
+                if (val > 0 && !this.soundEngine.bioRhythmInterval && !this.soundEngine.isMuted && this.soundEngine.ctx) {
+                    this.soundEngine.startBioRhythm();
+                } else if (val === 0 && this.soundEngine.bioRhythmInterval) {
+                    this.soundEngine.stopBioRhythm();
+                }
+            });
+        }
+
+        toggle(forceState) {
+            this.isActive = typeof forceState !== 'undefined' ? forceState : !this.isActive;
+            if (this.isActive) {
+                this.el.classList.add('active');
+                this.toggleBtn.classList.add('active');
+            } else {
+                this.el.classList.remove('active');
+                this.toggleBtn.classList.remove('active');
+            }
         }
     }
 
@@ -1179,6 +1692,12 @@
         constructor() {
             this.ctx = null;
             this.masterGain = null;
+
+            // Mixer Busses
+            this.atmosphereGain = null;
+            this.entrainmentGain = null;
+            this.biorhythmGain = null;
+
             this.spatialPanner = null;
             this.filterNode = null;
             this.entrainment = null; // New Module
@@ -1189,6 +1708,61 @@
             this.activeTheme = 'dawn';
             this.noiseBuffer = null;
             this.isFocusMode = false;
+            this.bioRhythmInterval = null;
+        }
+
+        startBioRhythm() {
+            if (this.bioRhythmInterval) return;
+            // 60 BPM Heartbeat simulation
+            const beat = () => {
+                if (this.isMuted || !this.ctx || this.ctx.state === 'suspended') return;
+                const now = this.ctx.currentTime;
+
+                // Sound Design: Low, thumpy kick-like sine
+                // "Lub"
+                const osc1 = this.ctx.createOscillator();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(60, now);
+                osc1.frequency.exponentialRampToValueAtTime(30, now + 0.1); // Pitch drop for "kick" effect
+
+                const g1 = this.ctx.createGain();
+                g1.gain.setValueAtTime(0, now);
+                g1.gain.linearRampToValueAtTime(0.2, now + 0.02); // Fast attack
+                g1.gain.exponentialRampToValueAtTime(0.001, now + 0.3); // Decay
+
+                osc1.connect(g1);
+                g1.connect(this.biorhythmGain);
+
+                osc1.start(now);
+                osc1.stop(now + 0.35);
+
+                // "Dub" (delayed by 250ms)
+                const osc2 = this.ctx.createOscillator();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(55, now + 0.25);
+                osc2.frequency.exponentialRampToValueAtTime(35, now + 0.25 + 0.1);
+
+                const g2 = this.ctx.createGain();
+                g2.gain.setValueAtTime(0, now + 0.25);
+                g2.gain.linearRampToValueAtTime(0.15, now + 0.25 + 0.02);
+                g2.gain.exponentialRampToValueAtTime(0.001, now + 0.25 + 0.25);
+
+                osc2.connect(g2);
+                g2.connect(this.biorhythmGain);
+
+                osc2.start(now + 0.25);
+                osc2.stop(now + 0.25 + 0.3);
+            };
+
+            beat(); // Instant start
+            this.bioRhythmInterval = setInterval(beat, 1000); // Repeat every 1s (60 BPM)
+        }
+
+        stopBioRhythm() {
+            if (this.bioRhythmInterval) {
+                clearInterval(this.bioRhythmInterval);
+                this.bioRhythmInterval = null;
+            }
         }
 
         init() {
@@ -1196,9 +1770,25 @@
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AudioContext();
 
-            // Master chain: Filter -> Panner -> MasterGain -> Analyser -> Destination
+            // Master Output Chain
             this.masterGain = this.ctx.createGain();
             this.masterGain.gain.value = 0;
+
+            // Analyser Setup
+            this.analyser = this.ctx.createAnalyser();
+            this.analyser.fftSize = 512; // Higher resolution for smoother visuals
+            this.analyser.smoothingTimeConstant = 0.85; // Smooth out jitter
+            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+            this.masterGain.connect(this.analyser);
+            this.analyser.connect(this.ctx.destination);
+
+            // --- MIXER ARCHITECTURE ---
+
+            // 1. Atmosphere Bus (Spatialized & Filtered)
+            this.atmosphereGain = this.ctx.createGain();
+            const atmVal = parseFloat(document.getElementById('fader-atmosphere').value);
+            this.atmosphereGain.gain.value = atmVal;
 
             this.spatialPanner = this.ctx.createStereoPanner();
             this.spatialPanner.pan.value = 0;
@@ -1207,19 +1797,25 @@
             this.filterNode.type = 'lowpass';
             this.filterNode.frequency.value = 5000; // Initial soft cutoff
 
-            // Analyser Setup
-            this.analyser = this.ctx.createAnalyser();
-            this.analyser.fftSize = 512; // Higher resolution for smoother visuals
-            this.analyser.smoothingTimeConstant = 0.85; // Smooth out jitter
-            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-
+            // Atmosphere -> Filter -> Panner -> Master
+            this.atmosphereGain.connect(this.filterNode);
             this.filterNode.connect(this.spatialPanner);
             this.spatialPanner.connect(this.masterGain);
-            this.masterGain.connect(this.analyser); // Connect Master to Analyser
-            this.analyser.connect(this.ctx.destination); // Connect Analyser to Output
 
-            // Init Entrainment (Connects directly to destination to bypass spatial/filter effects of the environment)
-            this.entrainment = new EntrainmentEngine(this.ctx, this.ctx.destination);
+            // 2. Entrainment Bus (Direct to Master to preserve phase/stereo)
+            this.entrainmentGain = this.ctx.createGain();
+            const entVal = parseFloat(document.getElementById('fader-entrainment').value);
+            this.entrainmentGain.gain.value = entVal;
+            this.entrainmentGain.connect(this.masterGain);
+
+            // Init Entrainment Engine
+            this.entrainment = new EntrainmentEngine(this.ctx, this.entrainmentGain);
+
+            // 3. Bio-Rhythm Bus (Deep Low End)
+            this.biorhythmGain = this.ctx.createGain();
+            const bioVal = parseFloat(document.getElementById('fader-bio').value);
+            this.biorhythmGain.gain.value = bioVal;
+            this.biorhythmGain.connect(this.masterGain);
 
             // Generate White/Pink Noise Buffer for reuse
             this.createNoiseBuffer();
@@ -1302,6 +1898,11 @@
             this.masterGain.gain.linearRampToValueAtTime(0.3, now + 2); // Fade in
 
             this.playTheme(this.activeTheme);
+
+            // Check BioRhythm autostart
+            if (this.biorhythmGain && this.biorhythmGain.gain.value > 0) {
+                this.startBioRhythm();
+            }
         }
 
         stop() {
@@ -1313,6 +1914,9 @@
 
             // Stop entrainment too
             if (this.entrainment) this.entrainment.stop(true);
+
+            // Stop BioRhythm
+            this.stopBioRhythm();
 
             // Cleanup nodes after fade
             setTimeout(() => this.stopAllNodes(), 1100);
@@ -1426,7 +2030,7 @@
 
             osc1.connect(gain);
             osc2.connect(gain);
-            gain.connect(this.filterNode);
+            gain.connect(this.atmosphereGain);
 
             osc1.start(now);
             osc2.start(now);
@@ -1449,7 +2053,7 @@
 
             osc1.connect(lpf);
             lpf.connect(gain);
-            gain.connect(this.filterNode);
+            gain.connect(this.atmosphereGain);
 
             osc1.start(now);
             this.currentNodes.push(osc1, lpf, gain);
@@ -1480,7 +2084,7 @@
 
             noiseSrc.connect(noiseFilter);
             noiseFilter.connect(gain);
-            gain.connect(this.filterNode);
+            gain.connect(this.atmosphereGain);
 
             noiseSrc.start(now);
             lfo.start(now);
@@ -1711,6 +2315,9 @@
         // Initialize Sound Engine
         const soundEngine = new SoundEngine();
 
+        // Initialize Neural HUD
+        const neuralHUD = new NeuralHUD(soundEngine);
+
         // Initialize Visualizer
         const visualizerCanvas = document.getElementById('visualizer-canvas');
         const visualizer = new VisualizerEngine(visualizerCanvas, soundEngine);
@@ -1721,6 +2328,9 @@
              if (isFocusModeActive) toggleFocusMode();
         });
         const toggleFlowButton = document.getElementById('toggle-flow');
+
+        // Initialize Telemetry System
+        const telemetry = new TelemetrySystem(soundEngine, flowOrchestrator);
 
         toggleFlowButton.addEventListener('click', () => {
             flowOrchestrator.toggle();
