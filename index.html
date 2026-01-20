@@ -616,11 +616,94 @@
         }
 
         .telemetry-section {
-            flex: 2;
+            flex: 1.5; /* Adjusted for Config Section */
             background: rgba(0,0,0,0.2);
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
             padding: 20px;
+        }
+
+        /* --- New Config Section Styles --- */
+        .config-section {
+            flex: 1;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .config-item label {
+            font-size: 9px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            color: #E8EAED;
+            font-family: 'Inter', monospace;
+            font-size: 12px;
+            width: 30px;
+            text-align: right;
+            -moz-appearance: textfield; /* Remove arrows Firefox */
+        }
+        .input-wrapper input::-webkit-outer-spin-button,
+        .input-wrapper input::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Remove arrows Chrome */
+            margin: 0;
+        }
+        .input-wrapper input:focus { outline: none; }
+        .input-wrapper span {
+            font-size: 9px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .career-stats {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: rgba(255,255,255,0.6);
+        }
+        .stat-row span:last-child {
+            color: #00FF9D;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
 
         #telemetry-canvas {
@@ -1037,6 +1120,45 @@
                 </div>
             </div>
 
+            <div class="hud-section config-section">
+                <div class="hud-label">MISSION PROFILE</div>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>INDUCTION</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="cfg-induction" min="1" max="10" value="2">
+                            <span>MIN</span>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <label>DEEP WORK</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="cfg-work" min="5" max="90" value="25">
+                            <span>MIN</span>
+                        </div>
+                    </div>
+                     <div class="config-item">
+                        <label>RECOVERY</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="cfg-recovery" min="1" max="15" value="3">
+                            <span>MIN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-label" style="margin-top: 20px;">CAREER LOG</div>
+                <div class="career-stats">
+                     <div class="stat-row">
+                        <span>TOTAL HOURS</span>
+                        <span id="career-hours">0.0</span>
+                     </div>
+                     <div class="stat-row">
+                        <span>SESSIONS</span>
+                        <span id="career-sessions">0</span>
+                     </div>
+                </div>
+            </div>
+
             <div class="hud-section mixer-section">
                 <div class="hud-label">TACTICAL AUDIO MIXER</div>
                 <div class="faders">
@@ -1141,6 +1263,90 @@
     <div id="theme-bloom"></div>
 
     <script>
+    // --- PERSISTENCE MANAGER ---
+    class PersistenceManager {
+        constructor() {
+            this.STORAGE_KEY = 'komorebi_system_state_v1';
+            this.state = this.load();
+        }
+
+        get defaults() {
+            return {
+                mixer: {
+                    atmosphere: 1.0,
+                    entrainment: 1.0,
+                    bio: 0.0
+                },
+                durations: {
+                    induction: 2,
+                    work: 25,
+                    recovery: 3
+                },
+                theme: 'dawn',
+                career: {
+                    totalSeconds: 0,
+                    sessions: 0
+                }
+            };
+        }
+
+        load() {
+            try {
+                const stored = localStorage.getItem(this.STORAGE_KEY);
+                if (!stored) return this.defaults;
+                const parsed = JSON.parse(stored);
+                // Deep merge with defaults to handle version updates/missing keys
+                return {
+                    mixer: { ...this.defaults.mixer, ...parsed.mixer },
+                    durations: { ...this.defaults.durations, ...parsed.durations },
+                    theme: parsed.theme || this.defaults.theme,
+                    career: { ...this.defaults.career, ...parsed.career }
+                };
+            } catch (e) {
+                console.warn('Failed to load system state', e);
+                return this.defaults;
+            }
+        }
+
+        save() {
+            try {
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+            } catch (e) {
+                console.warn('Failed to save system state', e);
+            }
+        }
+
+        updateMixer(key, value) {
+            if (this.state.mixer[key] !== undefined) {
+                this.state.mixer[key] = value;
+                this.save();
+            }
+        }
+
+        updateDuration(phase, minutes) {
+            if (this.state.durations[phase] !== undefined) {
+                this.state.durations[phase] = minutes;
+                this.save();
+            }
+        }
+
+        updateTheme(theme) {
+            this.state.theme = theme;
+            this.save();
+        }
+
+        logTime(seconds) {
+            this.state.career.totalSeconds += seconds;
+            this.save(); // Note: Frequent writes to localStorage might be heavy? It's sync.
+            // Maybe throttle this? For now, 1s is fine for desktop.
+        }
+
+        logSessionComplete() {
+            this.state.career.sessions += 1;
+            this.save();
+        }
+    }
+
     // --- ENTRAINMENT ENGINE SUB-MODULE ---
     class EntrainmentEngine {
         constructor(ctx, destination) {
@@ -1282,9 +1488,10 @@
 
     // --- TELEMETRY SYSTEM ---
     class TelemetrySystem {
-        constructor(soundEngine, flowOrchestrator) {
+        constructor(soundEngine, flowOrchestrator, persistence) {
             this.soundEngine = soundEngine;
             this.flow = flowOrchestrator;
+            this.persistence = persistence;
             this.canvas = document.getElementById('telemetry-canvas');
             this.ctx = this.canvas.getContext('2d');
             this.timerEl = document.getElementById('session-timer');
@@ -1351,6 +1558,14 @@
 
                 this.accumulatedScore += 0.1 * multiplier;
                 this.scoreEl.textContent = this.accumulatedScore.toFixed(1);
+
+                // Log time to persistence
+                if (this.persistence) this.persistence.logTime(1);
+
+                // Update Career HUD if visible
+                const hours = (this.persistence.state.career.totalSeconds / 3600).toFixed(1);
+                const el = document.getElementById('career-hours');
+                if (el) el.textContent = hours;
 
             } else {
                 // Pause timer logic (do nothing, preserve startTime? or reset?)
@@ -1421,8 +1636,9 @@
 
     // --- NEURAL HUD SYSTEM ---
     class NeuralHUD {
-        constructor(soundEngine) {
+        constructor(soundEngine, persistence) {
             this.soundEngine = soundEngine;
+            this.persistence = persistence;
             this.el = document.getElementById('neural-hud');
             this.toggleBtn = document.getElementById('toggle-hud');
             this.isActive = false;
@@ -1432,6 +1648,13 @@
                 atmosphere: document.getElementById('fader-atmosphere'),
                 entrainment: document.getElementById('fader-entrainment'),
                 bio: document.getElementById('fader-bio')
+            };
+
+            // Configs
+            this.configs = {
+                induction: document.getElementById('cfg-induction'),
+                work: document.getElementById('cfg-work'),
+                recovery: document.getElementById('cfg-recovery')
             };
 
             this.init();
@@ -1455,23 +1678,27 @@
 
             // Fader Logic
             this.faders.atmosphere.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
                 if (this.soundEngine.atmosphereGain) {
                     this.soundEngine.atmosphereGain.gain.setTargetAtTime(
-                        parseFloat(e.target.value),
+                        val,
                         this.soundEngine.ctx.currentTime,
                         0.1
                     );
                 }
+                this.persistence.updateMixer('atmosphere', val);
             });
 
             this.faders.entrainment.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
                 if (this.soundEngine.entrainmentGain) {
                     this.soundEngine.entrainmentGain.gain.setTargetAtTime(
-                        parseFloat(e.target.value),
+                        val,
                         this.soundEngine.ctx.currentTime,
                         0.1
                     );
                 }
+                this.persistence.updateMixer('entrainment', val);
             });
 
             this.faders.bio.addEventListener('input', (e) => {
@@ -1483,6 +1710,7 @@
                         0.1
                     );
                 }
+                this.persistence.updateMixer('bio', val);
 
                 // Smart Logic: If Bio is turned up, start the rhythm if it's off (and sound is on)
                 if (val > 0 && !this.soundEngine.bioRhythmInterval && !this.soundEngine.isMuted && this.soundEngine.ctx) {
@@ -1490,6 +1718,17 @@
                 } else if (val === 0 && this.soundEngine.bioRhythmInterval) {
                     this.soundEngine.stopBioRhythm();
                 }
+            });
+
+            // Config Logic
+            this.configs.induction.addEventListener('change', (e) => {
+                 this.persistence.updateDuration('induction', parseInt(e.target.value));
+            });
+            this.configs.work.addEventListener('change', (e) => {
+                 this.persistence.updateDuration('work', parseInt(e.target.value));
+            });
+            this.configs.recovery.addEventListener('change', (e) => {
+                 this.persistence.updateDuration('recovery', parseInt(e.target.value));
             });
         }
 
@@ -2110,9 +2349,10 @@
 
     // --- FLOW ORCHESTRATOR ---
     class FlowOrchestrator {
-        constructor(soundEngine, entrainmentModes, onStart) {
+        constructor(soundEngine, entrainmentModes, persistence, onStart) {
             this.soundEngine = soundEngine;
             this.entrainmentModes = entrainmentModes;
+            this.persistence = persistence;
             this.onStart = onStart;
 
             // Configuration
@@ -2123,11 +2363,7 @@
                 RECOVERY: 'RECOVERY'
             };
 
-            this.durations = {
-                induction: 2 * 60 * 1000, // 2 mins
-                work: 25 * 60 * 1000,      // 25 mins
-                recovery: 3 * 60 * 1000    // 3 mins
-            };
+            // Durations are now pulled from persistence dynamically
 
             // State
             this.currentPhase = this.PHASES.IDLE;
@@ -2197,7 +2433,7 @@
 
             switch(phase) {
                 case this.PHASES.INDUCTION:
-                    duration = this.durations.induction;
+                    duration = this.persistence.state.durations.induction * 60 * 1000;
                     // Actions: Alpha Waves, Breathing Guide On
                     if (this.soundEngine.entrainment)
                         this.soundEngine.entrainment.setMode(this.entrainmentModes.alpha);
@@ -2207,7 +2443,7 @@
                     break;
 
                 case this.PHASES.DEEP_WORK:
-                    duration = this.durations.work;
+                    duration = this.persistence.state.durations.work * 60 * 1000;
                     // Actions: Gamma Waves, Focus Mode OFF (Steady state), Darker Visuals
                     if (this.soundEngine.entrainment)
                         this.soundEngine.entrainment.setMode(this.entrainmentModes.gamma);
@@ -2224,7 +2460,7 @@
                     break;
 
                 case this.PHASES.RECOVERY:
-                    duration = this.durations.recovery;
+                    duration = this.persistence.state.durations.recovery * 60 * 1000;
                     // Actions: Theta Waves, Lighter Visuals
                     if (this.soundEngine.entrainment)
                         this.soundEngine.entrainment.setMode(this.entrainmentModes.theta);
@@ -2279,6 +2515,9 @@
             } else if (this.currentPhase === this.PHASES.DEEP_WORK) {
                 this.transitionTo(this.PHASES.RECOVERY);
             } else if (this.currentPhase === this.PHASES.RECOVERY) {
+                this.persistence.logSessionComplete();
+                // Update HUD immediately
+                document.getElementById('career-sessions').textContent = this.persistence.state.career.sessions;
                 this.stop(); // Done
             }
         }
@@ -2312,25 +2551,46 @@
             theta: { name: 'Dream', rate: 5, carrier: 147 }  // Purple
         };
 
+        // Initialize Persistence
+        const persistence = new PersistenceManager();
+
+        // Restore State to UI
+        document.getElementById('fader-atmosphere').value = persistence.state.mixer.atmosphere;
+        document.getElementById('fader-entrainment').value = persistence.state.mixer.entrainment;
+        document.getElementById('fader-bio').value = persistence.state.mixer.bio;
+
+        document.getElementById('cfg-induction').value = persistence.state.durations.induction;
+        document.getElementById('cfg-work').value = persistence.state.durations.work;
+        document.getElementById('cfg-recovery').value = persistence.state.durations.recovery;
+
+        document.getElementById('career-hours').textContent = (persistence.state.career.totalSeconds / 3600).toFixed(1);
+        document.getElementById('career-sessions').textContent = persistence.state.career.sessions;
+
+        // Restore Theme (UI State)
+        body.dataset.theme = persistence.state.theme;
+
         // Initialize Sound Engine
         const soundEngine = new SoundEngine();
+        // SoundEngine init() will be called when user interacts.
+        // It reads from DOM, so it will pick up the restored fader values.
+        soundEngine.activeTheme = persistence.state.theme; // Set internal state
 
         // Initialize Neural HUD
-        const neuralHUD = new NeuralHUD(soundEngine);
+        const neuralHUD = new NeuralHUD(soundEngine, persistence);
 
         // Initialize Visualizer
         const visualizerCanvas = document.getElementById('visualizer-canvas');
         const visualizer = new VisualizerEngine(visualizerCanvas, soundEngine);
 
         // Initialize Flow Orchestrator
-        const flowOrchestrator = new FlowOrchestrator(soundEngine, ENTRAINMENT_MODES, () => {
+        const flowOrchestrator = new FlowOrchestrator(soundEngine, ENTRAINMENT_MODES, persistence, () => {
              // Stop manual focus mode if active, but don't reset text (handled by check in toggleFocusMode)
              if (isFocusModeActive) toggleFocusMode();
         });
         const toggleFlowButton = document.getElementById('toggle-flow');
 
         // Initialize Telemetry System
-        const telemetry = new TelemetrySystem(soundEngine, flowOrchestrator);
+        const telemetry = new TelemetrySystem(soundEngine, flowOrchestrator, persistence);
 
         toggleFlowButton.addEventListener('click', () => {
             flowOrchestrator.toggle();
@@ -2599,6 +2859,9 @@
 
                 // Update audio theme
                 soundEngine.setTheme(newTheme);
+
+                // Save preference
+                persistence.updateTheme(newTheme);
             });
         });
 
